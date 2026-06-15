@@ -16,7 +16,7 @@ setInterval(function () {
 
 // Application State
 const state = {
-  language: "hi", // Default: Hindi (as requested). Options: 'hi', 'en'
+  language: "en", // Default: English. Options: 'hi', 'en'
   nightMode: false, // Default: standard space-neon cyan. True: red night mode
   sensorPermission: false,
   
