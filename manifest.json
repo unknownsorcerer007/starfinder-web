@@ -1,0 +1,22 @@
+{
+  "short_name": "StarFinder",
+  "name": "StarFinder Web - Offline AR Star Tracker",
+  "description": "100% offline, in-browser plate solving and AR constellation finder",
+  "start_url": "index.html",
+  "background_color": "#040814",
+  "theme_color": "#040814",
+  "display": "standalone",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

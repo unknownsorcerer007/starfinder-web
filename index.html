@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>StarFinder Web - 100% Offline PWA</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="StarFinder Web - एक 100% ऑफ़लाइन, इन-ब्राउज़र प्लेट सॉल्विंग और एआर स्काई ट्रैकर PWA। तारों और तारामंडल को तुरंत पहचानें।">
+  <meta name="keywords" content="Star Finder, Plate Solving, AR Constellations, Astronomy offline, PWA star catalog, कालपुरुष, सप्तर्षि">
+  <meta name="author" content="Antigravity Team">
+  <meta name="theme-color" content="#040814">
+  
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <div id="app-container">
+    <!-- Full-screen Camera Stream (Z-Index: 1) -->
+    <video id="camera-stream" autoplay playsinline muted></video>
+    
+    <!-- AR Celestial Vector Drawing Canvas (Z-Index: 2) -->
+    <canvas id="ar-overlay"></canvas>
+
+    <!-- HUD Overlay Layer (Z-Index: 3) -->
+    <div class="hud-layer">
+      <!-- Top HUD Header -->
+      <header class="interactive">
+        <button id="menu-btn" class="header-btn" title="Settings / Drawer">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+          </svg>
+        </button>
+        
+        <div id="direction-text" class="direction-hud">
+          दिशा: <span>स्कैनिंग...</span> | RA: <span>--h --m</span> | Dec: <span>--°</span>
+        </div>
+        
+        <label class="header-btn" style="border-radius: 50%; overflow: hidden;" title="Toggle Night Vision Mode">
+          <input type="checkbox" id="night-mode-toggle" style="display:none;">
+          <svg viewBox="0 0 24 24" style="cursor: pointer; fill: currentColor;">
+            <!-- Moon / Eye icon shape -->
+            <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5.717V9.717c0-.756.805-1.242 1.48-.905l4.335 2.158c.693.345.693 1.341 0 1.687l-4.335 2.158c-.675.337-1.48-.15-1.48-.906z"/>
+          </svg>
+        </label>
+      </header>
+
+      <!-- Sync / Offline indicator badge -->
+      <div id="offline-badge" class="sync-indicator">
+        <div id="sync-dot" class="sync-dot"></div>
+        <span id="sync-label">Checking Offline Database...</span>
+      </div>
+
+      <!-- Center Reticle Focus Target -->
+      <div class="reticle-container">
+        <div class="reticle">
+          <div class="reticle-dot"></div>
+        </div>
+        <div class="reticle-label" data-translate="facing">FACING</div>
+      </div>
+
+      <!-- Bottom HUD Footer (Slider & Capture) -->
+      <div class="hud-footer interactive">
+        
+        <!-- Time Travel Slider -->
+        <div class="slider-container">
+          <div class="slider-labels">
+            <span data-translate="past">Past</span>
+            <span id="time-label-now" class="active" data-translate="now">Now</span>
+            <span data-translate="future">Future</span>
+          </div>
+          <div class="slider-wrapper">
+            <input type="range" id="time-travel-slider" min="-12" max="12" value="0" step="1">
+          </div>
+        </div>
+
+        <!-- Big Scan / Capture Button -->
+        <div class="capture-btn-container">
+          <div class="capture-pulse-ring"></div>
+          <button id="capture-btn" class="capture-btn" title="Capture & Solve Stars">
+            <svg viewBox="0 0 24 24">
+              <!-- Aperture/Scan SVG -->
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Backdrop for Drawer Menu -->
+    <div id="drawer-backdrop" class="drawer-backdrop"></div>
+
+    <!-- Side Navigation Menu / Settings -->
+    <div id="side-drawer" class="side-drawer">
+      <div class="drawer-header">
+        <div class="drawer-title" data-translate="title">StarFinder Web</div>
+        <button id="close-drawer" class="close-sheet-btn" onclick="document.getElementById('side-drawer').classList.remove('open'); document.getElementById('drawer-backdrop').classList.remove('show');">&times;</button>
+      </div>
+      
+      <div class="drawer-body">
+        <div class="settings-section">
+          <div class="settings-section-title" data-translate="achievements">ACHIEVEMENTS</div>
+          <div id="menu-achievements" class="menu-item">
+            <span>🏆</span>
+            <span class="menu-item-text" data-translate="achievements">Achievements</span>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title" data-translate="alerts">ASTRO ALERTS</div>
+          <div id="menu-alerts" class="menu-item">
+            <span>📡</span>
+            <span class="menu-item-text" data-translate="alerts">Astro Alerts</span>
+          </div>
+        </div>
+
+        <div class="settings-section" style="margin-top: 15px;">
+          <div class="settings-section-title">CONFIG</div>
+          
+          <!-- Language Toggle Menu Item -->
+          <div class="menu-item">
+            <span>🌐</span>
+            <span class="menu-item-text">English UI</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="lang-toggle">
+              <span class="slider-round"></span>
+            </label>
+          </div>
+
+          <div class="menu-item" style="font-size: 11px; color: var(--text-muted); pointer-events: none;" id="location-label">
+            Using Location: GPS checking...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plate Solving Loading / Scanner Overlay -->
+    <div id="analysis-overlay" class="analysis-overlay">
+      <div class="scanner-box">
+        <div class="corner top-left"></div>
+        <div class="corner top-right"></div>
+        <div class="corner bottom-left"></div>
+        <div class="corner bottom-right"></div>
+      </div>
+      <div class="analysis-text" data-translate="scanning">Analyzing Stars...</div>
+      <div class="analysis-subtext" data-translate="scanningSub">Local Geometric Hashing (No Internet)</div>
+    </div>
+
+    <!-- Results Bottom Info Sheet -->
+    <div id="results-sheet" class="bottom-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title" data-translate="solvedTitle">IDENTIFIED CONSTELLATION</div>
+        <button class="close-sheet-btn">&times;</button>
+      </div>
+      <div class="sheet-body results-bottom-sheet">
+        <div class="results-constellation-info">
+          <div id="results-con-title" class="results-constellation-title">Orion Constellation</div>
+          <div id="results-star-count" class="results-constellation-details">45 stars identified</div>
+          <div id="results-con-desc" class="results-constellation-desc">
+            Orion represents a hunter. It contains stars like Betelgeuse and Rigel.
+          </div>
+        </div>
+        <div class="results-actions">
+          <button id="results-save" class="btn btn-primary">
+            <span>💾</span> <span data-translate="saveBtn">Save Photo</span>
+          </button>
+          <button id="results-share" class="btn btn-secondary" onclick="alert('Share feature requires browser integration. Image saved to gallery.')">
+            <span>📤</span> <span data-translate="shareBtn">Share</span>
+          </button>
+          <button id="results-again" class="btn btn-icon-only" title="Scan Again">
+            <span>🔄</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Achievements Badge Gallery Bottom Sheet -->
+    <div id="achievements-sheet" class="bottom-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title" data-translate="achievements">ACHIEVEMENTS</div>
+        <button class="close-sheet-btn">&times;</button>
+      </div>
+      <div class="sheet-body">
+        <div id="badge-grid" class="badge-grid">
+          <!-- Populated dynamically by app.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerts Calendar Bottom Sheet -->
+    <div id="alerts-sheet" class="bottom-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title" data-translate="alerts">ASTRO ALERTS</div>
+        <button class="close-sheet-btn">&times;</button>
+      </div>
+      <div class="sheet-body">
+        <div id="alerts-list" class="alerts-list">
+          <!-- Populated dynamically by app.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Achievement Toast Notification -->
+    <div id="achievement-toast" class="achievement-toast">
+      <div class="badge-icon-wrapper unlocked" style="width: 44px; height: 44px; border: 1px solid var(--accent);">
+        <span style="font-size: 20px;">🏆</span>
+      </div>
+      <div class="toast-content">
+        <div class="toast-title" data-translate="toastAchievement">ACHIEVEMENT UNLOCKED!</div>
+        <div id="toast-badge-name" class="toast-name">Orion Hunter</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- External JavaScript Files -->
+  <script src="stars_db.js"></script>
+  <script src="plate_solver.js"></script>
+  <script src="app.js"></script>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker Registered successfully.', reg.scope))
+          .catch(err => console.log('Service Worker Registration failed.', err));
+      });
+    }
+  </script>
+</body>
+</html>
