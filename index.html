@@ -80,15 +80,24 @@
           </div>
         </div>
 
-        <!-- Big Scan / Capture Button -->
-        <div class="capture-btn-container">
-          <div class="capture-pulse-ring"></div>
-          <button id="capture-btn" class="capture-btn" title="Capture & Solve Stars">
-            <svg viewBox="0 0 24 24">
-              <!-- Aperture/Scan SVG -->
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-            </svg>
+        <!-- Big Scan / Capture Button & Upload Button -->
+        <div class="capture-btn-container" style="gap: 15px;">
+          <!-- Hidden file input -->
+          <input type="file" id="photo-upload" accept="image/*" style="display:none;">
+          
+          <button id="upload-btn" class="header-btn" title="Upload Sky Photo" style="width: 56px; height: 56px; border-radius: 50%; font-size: 20px;">
+            📁
           </button>
+          
+          <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+            <div class="capture-pulse-ring" style="width: 84px; height: 84px;"></div>
+            <button id="capture-btn" class="capture-btn" title="Capture & Solve Stars">
+              <svg viewBox="0 0 24 24">
+                <!-- Aperture/Scan SVG -->
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
       </div>
@@ -118,6 +127,14 @@
           <div id="menu-alerts" class="menu-item">
             <span>📡</span>
             <span class="menu-item-text" data-translate="alerts">Astro Alerts</span>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">PHOTO TOOLS</div>
+          <div id="menu-upload" class="menu-item">
+            <span>📁</span>
+            <span class="menu-item-text">Upload Sky Photo</span>
           </div>
         </div>
 

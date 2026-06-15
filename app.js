@@ -21,6 +21,7 @@ const state = {
   // Camera & Stream
   cameraStream: null,
   isDesktopSimulator: true, // fallback to drag-to-look and mock background
+  uploadedImage: null, // Holds uploaded image object if active
   
   // Active solver state
   solving: false,
@@ -343,10 +344,11 @@ function initUI() {
       const sheet = e.target.closest(".bottom-sheet");
       sheet.classList.remove("open");
       
-      // If closing solved sheet, reset solver highlights
+      // If closing solved sheet, reset solver highlights and uploaded image
       if (sheet.id === "results-sheet") {
         state.highlightedConstellation = null;
         state.solvedResult = null;
+        state.uploadedImage = null;
       }
     });
   });
@@ -364,6 +366,34 @@ function initUI() {
     document.getElementById("alerts-sheet").classList.add("open");
   });
 
+  // Photo Upload handling
+  const uploadBtn = document.getElementById("upload-btn");
+  const photoUploadInput = document.getElementById("photo-upload");
+  const menuUpload = document.getElementById("menu-upload");
+
+  const triggerUploadClick = () => {
+    photoUploadInput.click();
+  };
+
+  if (uploadBtn) uploadBtn.addEventListener("click", triggerUploadClick);
+  if (menuUpload) menuUpload.addEventListener("click", triggerUploadClick);
+
+  photoUploadInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        state.uploadedImage = img;
+        triggerScanForUploadedImage(img);
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
   // Capture Button
   const captureBtn = document.getElementById("capture-btn");
   captureBtn.addEventListener("click", triggerScan);
@@ -374,6 +404,7 @@ function initUI() {
     document.getElementById("results-sheet").classList.remove("open");
     state.highlightedConstellation = null;
     state.solvedResult = null;
+    state.uploadedImage = null;
   });
 
   // Setup canvas resizing
@@ -658,6 +689,80 @@ function triggerScan() {
   }, 2200); // 2.2 seconds simulated analysis
 }
 
+// Trigger Plate Solving for Uploaded Photo
+function triggerScanForUploadedImage(img) {
+  if (state.solving) return;
+
+  state.solving = true;
+  const overlay = document.getElementById("analysis-overlay");
+  overlay.classList.add("show");
+
+  // Create canvas of dimensions matching image scale
+  const canvas = document.createElement("canvas");
+  const maxDim = 800;
+  let w = img.width;
+  let h = img.height;
+  if (w > maxDim || h > maxDim) {
+    if (w > h) {
+      h = (h / w) * maxDim;
+      w = maxDim;
+    } else {
+      w = (w / h) * maxDim;
+      h = maxDim;
+    }
+  }
+  canvas.width = w;
+  canvas.height = h;
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, w, h);
+
+  // Perform detection and global solve (without sensor info)
+  setTimeout(() => {
+    const stars = PlateSolver.detectStars(canvas);
+    // Use null for sensors coordinates to run a global scale-invariant match
+    const result = PlateSolver.solve(stars, STARS_DB, null, null, 45);
+
+    overlay.classList.remove("show");
+    state.solving = false;
+
+    if (result.solved) {
+      state.solvedResult = result;
+
+      // Find matched constellation
+      const matches = result.matches || [];
+      const conCounts = {};
+      matches.forEach(m => {
+        if (m.cat && m.cat.con) {
+          conCounts[m.cat.con] = (conCounts[m.cat.con] || 0) + 1;
+        }
+      });
+
+      let bestCon = null;
+      let maxCount = 0;
+      for (const con in conCounts) {
+        if (conCounts[con] > maxCount) {
+          maxCount = conCounts[con];
+          bestCon = con;
+        }
+      }
+
+      if (bestCon) {
+        state.highlightedConstellation = bestCon;
+        showResultSheet(bestCon, matches.length);
+
+        unlockBadge("first_planet");
+        if (bestCon === "Ori") {
+          unlockBadge("orion_hunter");
+        }
+      }
+    } else {
+      state.uploadedImage = null; // Revert since we couldn't solve it
+      showToastAlert("No constellations resolved. Ensure image has clear stars of Orion, Leo, Gemini, or Scorpius.");
+    }
+  }, 2200);
+}
+
 // Display Solved Results Panel
 function showResultSheet(conId, starCount) {
   const con = CONSTELLATION_INFO[conId];
@@ -742,7 +847,89 @@ function renderAR() {
   const lang = state.language;
   const isRed = state.nightMode;
 
-  // 1. Draw Simulated Background Starfield (only for desktop / when camera is offline)
+  // 1. Draw Uploaded Image background if active
+  if (state.uploadedImage) {
+    ctx.drawImage(state.uploadedImage, 0, 0, w, h);
+
+    // If solved, project overlay using 2D transform parameters
+    if (state.solvedResult && state.solvedResult.transform) {
+      const { a, b, tx, ty } = state.solvedResult.transform;
+      const cRA = state.solvedResult.centerRA;
+      const cDec = state.solvedResult.centerDec;
+
+      const projectedPoints = {};
+
+      // Project and draw stars
+      STARS_DB.stars.forEach(star => {
+        let diffRA = star.ra - cRA;
+        diffRA = ((diffRA + 180) % 360 + 360) % 360 - 180; // normalize -180 to 180
+
+        const u = diffRA * Math.cos(cDec * Math.PI / 180);
+        const v = star.dec - cDec;
+
+        const sx = a * u - b * v + tx;
+        const sy = b * u + a * v + ty;
+
+        if (sx >= -100 && sx <= w + 100 && sy >= -100 && sy <= h + 100) {
+          projectedPoints[star.id] = { x: sx, y: sy, visible: true };
+
+          const r = Math.max(1.5, 5 - (star.mag + 1.5) * 0.7);
+          ctx.fillStyle = isRed ? "#ff6666" : "#ffffff";
+          ctx.shadowColor = isRed ? "rgba(255, 0, 0, 0.8)" : "rgba(0, 240, 255, 0.8)";
+          ctx.shadowBlur = star.mag < 1.0 ? 8 : 2;
+
+          ctx.beginPath();
+          ctx.arc(sx, sy, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          if (star.mag < 1.5) {
+            ctx.fillStyle = isRed ? "#ff4444" : "#94a3b8";
+            ctx.font = "10px sans-serif";
+            ctx.textAlign = "left";
+            const name = lang === "hi" ? star.name_hi.split(" (")[0] : star.name;
+            ctx.fillText(name, sx + r + 4, sy + 3);
+          }
+        }
+      });
+
+      // Draw constellation lines
+      STARS_DB.constellations.forEach(con => {
+        const isHighlighted = con.id === state.highlightedConstellation;
+        
+        ctx.strokeStyle = isRed ? (isHighlighted ? "rgba(255,0,0,0.85)" : "rgba(180,0,0,0.25)") : (isHighlighted ? "rgba(0,240,255,0.9)" : "rgba(0,240,255,0.22)");
+        ctx.shadowBlur = isHighlighted ? 12 : 0;
+        ctx.lineWidth = isHighlighted ? 2.5 : 1.2;
+
+        con.lines.forEach(line => {
+          const p1 = projectedPoints[line[0]];
+          const p2 = projectedPoints[line[1]];
+          if (p1 && p2) {
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        });
+        ctx.shadowBlur = 0;
+
+        const centerLine = con.lines[0];
+        if (centerLine) {
+          const p = projectedPoints[centerLine[0]];
+          if (p) {
+            ctx.fillStyle = isHighlighted ? (isRed ? "#ff0000" : "#00f0ff") : (isRed ? "#aa0000" : "#00a8b5");
+            ctx.font = isHighlighted ? "bold 13px 'Orbitron'" : "11px 'Orbitron'";
+            ctx.textAlign = "center";
+            const conName = lang === "hi" ? con.name_hi : con.name;
+            ctx.fillText(conName, p.x, p.y - 20);
+          }
+        }
+      });
+    }
+    return; // Skip normal camera live projection rendering
+  }
+
+  // 2. Draw Simulated Background Starfield (only for desktop / when camera is offline)
   if (state.isDesktopSimulator && state.cameraStream === null) {
     const grad = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, Math.max(w, h));
     if (isRed) {
@@ -770,7 +957,7 @@ function renderAR() {
   // Calculate LST for constellation projection rotation
   const lst = getLocalSiderealTime() * 180 / Math.PI;
 
-  // 2. Draw Constellation lines
+  // 3. Draw Constellation lines (Camera Live Mode)
   STARS_DB.constellations.forEach(con => {
     const isHighlighted = con.id === state.highlightedConstellation;
     
@@ -789,7 +976,6 @@ function renderAR() {
       const star2 = STARS_DB.stars.find(s => s.id === line[1]);
       if (!star1 || !star2) return;
 
-      // Rotate star coordinates according to current sidereal time (precession around poles)
       const rotRA1 = (star1.ra + lst) % 360;
       const rotRA2 = (star2.ra + lst) % 360;
 
@@ -804,10 +990,8 @@ function renderAR() {
       }
     });
 
-    // Reset shadow
     ctx.shadowBlur = 0;
 
-    // Draw Constellation Label if center star is visible
     const centerLine = con.lines[0];
     if (centerLine) {
       const labelStar = STARS_DB.stars.find(s => s.id === centerLine[0]);
@@ -825,17 +1009,14 @@ function renderAR() {
     }
   });
 
-  // 3. Draw Stars
+  // 4. Draw Stars (Camera Live Mode)
   STARS_DB.stars.forEach(star => {
     const rotRA = (star.ra + lst) % 360;
     const p = project(rotRA, star.dec, w, h, state.centerRA, state.centerDec, state.roll);
     if (!p.visible) return;
 
-    // Radius proportional to magnitude (smaller mag = brighter = larger)
-    // Sirius: -1.46 (max brightness) -> radius 5px. Mag 3.5 -> radius 1.5px.
     const r = Math.max(1.5, 5 - (star.mag + 1.5) * 0.7);
 
-    // Glowing core
     if (isRed) {
       ctx.fillStyle = "#ff6666";
       ctx.shadowColor = "rgba(255, 0, 0, 0.8)";
@@ -850,7 +1031,6 @@ function renderAR() {
     ctx.fill();
     ctx.shadowBlur = 0;
 
-    // Draw individual star names for very bright stars
     if (star.mag < 1.5) {
       ctx.fillStyle = isRed ? "#ff4444" : "#94a3b8";
       ctx.font = "10px sans-serif";
@@ -860,31 +1040,27 @@ function renderAR() {
     }
   });
 
-  // 4. Draw ISS Satellite position
+  // 5. Draw ISS Satellite position (Camera Live Mode)
   const iss = propagateISSLocal(Date.now() + state.timeOffset);
   const pISS = project(iss.ra, iss.dec, w, h, state.centerRA, state.centerDec, state.roll);
   
   if (pISS.visible) {
-    // Check if ISS is overhead and unlock spotter badge
     const angleToCenter = Math.hypot(pISS.x - w/2, pISS.y - h/2);
     if (angleToCenter < 120 && !state.solving) {
       unlockBadge("iss_spotter");
     }
 
-    // Draw glowing pulsing yellow/cyan ring around ISS
-    ctx.strokeStyle = isRed ? "#ff0000" : "#eab308"; // Gold on normal, Red on red mode
+    ctx.strokeStyle = isRed ? "#ff0000" : "#eab308";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(pISS.x, pISS.y, 10 + Math.sin(Date.now() / 150) * 3, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Draw satellite icon core
     ctx.fillStyle = "#ffffff";
     ctx.beginPath();
     ctx.arc(pISS.x, pISS.y, 3, 0, Math.PI * 2);
     ctx.fill();
 
-    // Draw Label
     ctx.fillStyle = isRed ? "#ff0000" : "#ffffff";
     ctx.font = "bold 10px 'Orbitron'";
     ctx.textAlign = "center";
@@ -1124,9 +1300,11 @@ function exportWatermarkedImage() {
   exportCanvas.height = window.innerHeight;
   const ctx = exportCanvas.getContext("2d");
 
-  // 1. Draw video background or simulator background
+  // 1. Draw background (uploaded image or video stream or default simulator)
   const video = document.getElementById("camera-stream");
-  if (state.cameraStream) {
+  if (state.uploadedImage) {
+    ctx.drawImage(state.uploadedImage, 0, 0, exportCanvas.width, exportCanvas.height);
+  } else if (state.cameraStream) {
     ctx.drawImage(video, 0, 0, exportCanvas.width, exportCanvas.height);
   } else {
     // Draw simulator background
