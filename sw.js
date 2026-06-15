@@ -3,6 +3,9 @@
 const CACHE_NAME = "starfinder-cache-v1";
 const ASSETS = [
   "index.html",
+  "about.html",
+  "privacy.html",
+  "terms.html",
   "index.css",
   "stars_db.js",
   "plate_solver.js",

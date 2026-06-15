@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About & Help - StarFinder Web</title>
+  <link rel="stylesheet" href="index.css">
+  <style>
+    body {
+      overflow-y: auto !important; /* Enable scrolling for reading */
+      background-color: var(--bg-primary);
+    }
+    .legal-container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 30px;
+      background: var(--bg-glass-heavy);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--border-glow);
+      border-radius: 24px;
+      backdrop-filter: blur(20px);
+    }
+    h1, h2, h3 {
+      font-family: var(--font-family-mono);
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 28px;
+      border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+      padding-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    p, li {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 15px;
+      font-size: 15px;
+    }
+    li {
+      margin-left: 20px;
+    }
+    .back-btn {
+      margin-top: 30px;
+      width: 100%;
+      text-decoration: none;
+    }
+    .step-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px dashed rgba(var(--accent-rgb), 0.2);
+      border-radius: 12px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="legal-container">
+    <h1><span>ℹ️</span> About & Help (परिचय और मदद)</h1>
+    
+    <h2>1. StarFinder Web क्या है?</h2>
+    <p>
+      StarFinder Web एक अत्याधुनिक, 100% ऑफ़लाइन काम करने वाला Progressive Web App (PWA) है। यह शौकिया खगोलविदों, छात्रों और नाइट स्काई फोटोग्राफर्स को अपने स्मार्टफोन कैमरे की मदद से रात के आसमान में तारों और तारामंडल (Constellations) को पहचानने में मदद करता है।
+    </p>
+
+    <h2>2. यह कैसे काम करता है?</h2>
+    <p>
+      यह ऐप पूर्णतः इन-ब्राउज़र कंप्यूटिंग पर आधारित है:
+    </p>
+    <ul>
+      <li><strong>सेंसर ट्रैकिंग (AR Mode):</strong> आपके फोन के Gyroscope और Compass सेंसर का उपयोग करके यह आपके सामने के आसमान का एक रीयल-टाइम वर्चुअल मैप ड्रा करता है।</li>
+      <li><strong>ऑफ़लाइन प्लेट सॉल्विंग (Plate Solving):</strong> जब आप आसमान की फोटो खींचते हैं, तो ऐप के अंदर का एल्गोरिदम तारों की स्थिति का विश्लेषण करके उनकी सटीक दिशा और तारामंडल का नाम पहचान लेता है।</li>
+    </ul>
+
+    <h2>3. गाइड: सेंसर कैलिब्रेशन (Compass Calibration)</h2>
+    <div class="step-box">
+      <p><strong>सटीक दिशा के लिए दिशा सूचक को कैलिब्रेट करना बेहद जरूरी है:</strong></p>
+      <ol>
+        <li>ऐप खोलें और फोन को आसमान की तरफ उठाएं।</li>
+        <li>अपने फोन को हवा में अंग्रेजी के <strong>'8' (Eight)</strong> के आकार में दो-तीन बार घुमाएं।</li>
+        <li>इससे आपके फोन का मैग्नेटोमीटर री-कैलिब्रेट हो जाएगा और कंपास सटीक दिशा (North-East-West-South) दिखाने लगेगा।</li>
+      </ol>
+    </div>
+
+    <h2>4. ऑफ़लाइन PWA इंस्टॉल कैसे करें?</h2>
+    <p>
+      बिना इंटरनेट के कैंपिंग या हाइकिंग के दौरान ऐप का उपयोग करने के लिए इसे इंस्टॉल करें:
+    </p>
+    <ul>
+      <li><strong>Android (Chrome):</strong> वेबसाइट खोलने पर नीचे आने वाले "Add to Home Screen" प्रॉम्प्ट पर क्लिक करें।</li>
+      <li><strong>iOS (Safari):</strong> नीचे दिए गए 'Share' बटन पर टैप करें और स्क्रॉल करके "Add to Home Screen" का चयन करें।</li>
+    </ul>
+
+    <a href="index.html" class="btn btn-primary back-btn">
+      <span>🌌</span> आकाशीय ट्रैकर पर वापस जाएं
+    </a>
+  </div>
+</body>
+</html>
