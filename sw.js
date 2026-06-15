@@ -6,6 +6,7 @@ const ASSETS = [
   "index.css",
   "stars_db.js",
   "plate_solver.js",
+  "solver_worker.js",
   "app.js",
   "manifest.json",
   "assets/icon-192.png",

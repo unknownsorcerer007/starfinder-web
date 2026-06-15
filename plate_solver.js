@@ -5,17 +5,24 @@ const PlateSolver = {
    * Detects stars (bright spots) in a canvas image.
    * Converts to grayscale, applies thresholding, and finds local maxima centroids.
    */
-  detectStars: function (canvas, thresholdRatio = 0.82, maxStars = 15) {
-    const ctx = canvas.getContext("2d");
-    const width = canvas.width;
-    const height = canvas.height;
-    
+  detectStars: function (imageSource, thresholdRatio = 0.82, maxStars = 15) {
     let imgData;
-    try {
-      imgData = ctx.getImageData(0, 0, width, height);
-    } catch (e) {
-      console.warn("Unable to get image data (likely cross-origin issue in local testing). Returning mock stars.");
-      return this.generateMockStars(width, height);
+    let width, height;
+    
+    if (imageSource && imageSource.data && imageSource.width) {
+      imgData = imageSource;
+      width = imageSource.width;
+      height = imageSource.height;
+    } else {
+      const ctx = imageSource.getContext("2d");
+      width = imageSource.width;
+      height = imageSource.height;
+      try {
+        imgData = ctx.getImageData(0, 0, width, height);
+      } catch (e) {
+        console.warn("Unable to get image data. Returning mock stars.");
+        return this.generateMockStars(width, height);
+      }
     }
 
     const pixels = imgData.data;

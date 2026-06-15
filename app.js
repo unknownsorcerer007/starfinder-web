@@ -41,7 +41,15 @@ const state = {
     iss_spotter: false,
     meteor_tracker: false,
     time_traveler: false
-  }
+  },
+
+  // Smoothed orientation components for filtering
+  smoothDecX: 0,
+  smoothDecY: 0,
+  smoothRAX: 0,
+  smoothRAY: 0,
+  orientationInitialized: false,
+  solverWorker: null
 };
 
 // UI Translations
@@ -192,10 +200,12 @@ const CONSTELLATION_INFO = {
 window.addEventListener("DOMContentLoaded", () => {
   loadState();
   initUI();
+  initWorker();
   initSensors();
   initCamera();
   startRendering();
   updateSyncIndicator();
+  fetchLatestISSOrbit();
 });
 
 // Load state from LocalStorage
@@ -479,6 +489,141 @@ function initUI() {
   translateUI();
 }
 
+// Initialize Web Worker
+function initWorker() {
+  if (typeof Worker !== "undefined") {
+    try {
+      state.solverWorker = new Worker("solver_worker.js");
+      state.solverWorker.onmessage = function (e) {
+        if (state.solving) {
+          handleSolverResult(e.data);
+        }
+      };
+    } catch (err) {
+      console.warn("Failed to spawn Web Worker (running locally over file://). Falling back to synchronous plate solving.", err);
+      state.solverWorker = null;
+    }
+  }
+}
+
+// Handle solved results from either Worker or synchronous fallback
+function handleSolverResult(response) {
+  state.solving = false;
+  document.getElementById("analysis-overlay").classList.remove("show");
+
+  if (response && response.success && response.result.solved) {
+    const result = response.result;
+    state.solvedResult = result;
+    
+    const matches = result.matches || [];
+    const conCounts = {};
+    matches.forEach(m => {
+      if (m.cat && m.cat.con) {
+        conCounts[m.cat.con] = (conCounts[m.cat.con] || 0) + 1;
+      }
+    });
+
+    let bestCon = null;
+    let maxCount = 0;
+    for (const con in conCounts) {
+      if (conCounts[con] > maxCount) {
+        maxCount = conCounts[con];
+        bestCon = con;
+      }
+    }
+
+    if (bestCon) {
+      state.highlightedConstellation = bestCon;
+      showResultSheet(bestCon, matches.length);
+
+      unlockBadge("first_planet");
+      if (bestCon === "Ori") {
+        unlockBadge("orion_hunter");
+      }
+
+      let uniqueUnlocked = Object.keys(state.badges).filter(k => state.badges[k]).length;
+      if (uniqueUnlocked >= 3) {
+        unlockBadge("constellation_master");
+      }
+    }
+  } else {
+    // Revert if solve failed
+    state.uploadedImage = null;
+    showToastAlert("No constellations resolved. Ensure image shows clear stars of Orion, Ursa Major, or Scorpius.");
+  }
+}
+
+// Fetch Latest ISS TLE parameters dynamically
+function fetchLatestISSOrbit() {
+  if (!navigator.onLine) return;
+
+  // NORAD catalog number 25544 = ISS
+  fetch("https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=TLE")
+    .then(res => {
+      if (!res.ok) throw new Error("Network response not ok");
+      return res.text();
+    })
+    .then(text => {
+      const lines = text.trim().split("\n");
+      if (lines.length >= 2) {
+        let l1 = lines[0].startsWith("1 ") ? lines[0] : lines[1];
+        let l2 = lines[1].startsWith("2 ") ? lines[1] : lines[2];
+        
+        if (l1 && l2 && l1.startsWith("1 ") && l2.startsWith("2 ")) {
+          parseAndUpdateISS_TLE(l1, l2);
+        }
+      }
+    })
+    .catch(err => {
+      console.warn("Dynamic TLE fetch failed (likely CORS or network restriction). Using fallback pre-seeded parameters.", err);
+    });
+}
+
+// Parse orbital elements from TLE and update database epoch
+function parseAndUpdateISS_TLE(line1, line2) {
+  try {
+    const yearShort = parseInt(line1.substring(18, 20));
+    const year = 2000 + yearShort;
+    const dayOfYear = parseFloat(line1.substring(20, 32));
+    
+    // Epoch Date timestamp t0
+    const epochDate = new Date(Date.UTC(year, 0, 1) + (dayOfYear - 1) * 24 * 3600 * 1000);
+    const t0 = epochDate.getTime();
+    
+    // Orbit angles (converted to radians)
+    const inclination = parseFloat(line2.substring(8, 16)) * Math.PI / 180;
+    const omega0 = parseFloat(line2.substring(17, 25)) * Math.PI / 180;
+    const meanAnomaly0 = parseFloat(line2.substring(43, 51)) * Math.PI / 180;
+    
+    // Mean motion: revs/day -> rad/ms
+    const revsPerDay = parseFloat(line2.substring(52, 63));
+    const n = (revsPerDay * 2 * Math.PI) / (24 * 3600 * 1000);
+    
+    // Calculate Earth GMST at epoch date
+    const gmst0 = calculateGMST(epochDate);
+    
+    // Apply to state database parameters
+    STARS_DB.issEpoch.t0 = t0;
+    STARS_DB.issEpoch.inclination = inclination;
+    STARS_DB.issEpoch.omega0 = omega0;
+    STARS_DB.issEpoch.meanAnomaly0 = meanAnomaly0;
+    STARS_DB.issEpoch.n = n;
+    STARS_DB.issEpoch.theta0 = gmst0;
+    
+    console.log(`[TLE Sync] Successfully updated ISS orbit parameters from epoch: ${epochDate.toISOString()}`);
+  } catch (err) {
+    console.error("[TLE Sync] Error parsing orbital elements:", err);
+  }
+}
+
+// Calculate GMST in radians for a given UTC Date
+function calculateGMST(date) {
+  const j2000 = new Date(Date.UTC(2000, 0, 1, 12, 0, 0));
+  const diffDays = (date.getTime() - j2000.getTime()) / (24 * 3600 * 1000);
+  const gmstHours = (18.697374558 + 24.06570982441908 * diffDays) % 24;
+  return (gmstHours * 15) * Math.PI / 180; // degrees to radians
+}
+
 // Initialize Orientation Sensors
 function initSensors() {
   // Query User location first
@@ -547,10 +692,6 @@ function initSensors() {
 function handleOrientation(event) {
   state.sensorPermission = true;
   
-  // W3C spec orientations
-  // Alpha: 0 to 360, compass direction.
-  // Beta: -180 to 180, tilt front-to-back.
-  // Gamma: -90 to 90, tilt left-to-right.
   if (event.alpha === null) return;
 
   const alpha = event.alpha; // Heading (degrees)
@@ -559,15 +700,35 @@ function handleOrientation(event) {
 
   state.roll = gamma;
 
-  // Convert orientation to center pointing RA/Dec
-  // Center Declination is approximately the device pitch (beta)
-  state.centerDec = beta - 90; // offset depending on device hold vertical
-  if (state.centerDec < -90) state.centerDec = -90;
-  if (state.centerDec > 90) state.centerDec = 90;
+  // Raw targets (clamp declination)
+  let targetDec = (beta - 90) * Math.PI / 180;
+  if (targetDec < -Math.PI / 2) targetDec = -Math.PI / 2;
+  if (targetDec > Math.PI / 2) targetDec = Math.PI / 2;
 
-  // Center RA depends on heading (alpha) and local sidereal time
-  const lst = getLocalSiderealTime() * 180 / Math.PI;
-  state.centerRA = (lst - alpha + 360) % 360;
+  const lst = getLocalSiderealTime();
+  const targetRA = lst - (alpha * Math.PI / 180);
+
+  // Initialize smoothing variables on first orientation event
+  if (!state.orientationInitialized) {
+    state.smoothDecX = Math.cos(targetDec);
+    state.smoothDecY = Math.sin(targetDec);
+    state.smoothRAX = Math.cos(targetRA);
+    state.smoothRAY = Math.sin(targetRA);
+    state.orientationInitialized = true;
+  }
+
+  // Exponential moving average filter (EMA)
+  const k = 0.12; // Smoothing constant
+  state.smoothDecX = state.smoothDecX * (1 - k) + Math.cos(targetDec) * k;
+  state.smoothDecY = state.smoothDecY * (1 - k) + Math.sin(targetDec) * k;
+  state.smoothRAX = state.smoothRAX * (1 - k) + Math.cos(targetRA) * k;
+  state.smoothRAY = state.smoothRAY * (1 - k) + Math.sin(targetRA) * k;
+
+  // Re-calculate smoothed Center Dec and RA
+  state.centerDec = Math.atan2(state.smoothDecY, state.smoothDecX) * 180 / Math.PI;
+  
+  let smoothedRA = Math.atan2(state.smoothRAY, state.smoothRAX) * 180 / Math.PI;
+  state.centerRA = (smoothedRA + 360) % 360;
 
   updateDirectionHUD();
 }
@@ -873,10 +1034,15 @@ function renderAR() {
         if (sx >= -100 && sx <= w + 100 && sy >= -100 && sy <= h + 100) {
           projectedPoints[star.id] = { x: sx, y: sy, visible: true };
 
-          const r = Math.max(1.5, 5 - (star.mag + 1.5) * 0.7);
+          // Dynamic star twinkling calculations
+          const freq = 2.0 + Math.sin(star.id * 45.67) * 0.8;
+          const phase = star.id * 12.34;
+          const twinkle = 1.0 + Math.sin((Date.now() / 1000) * freq + phase) * 0.22;
+          const r = Math.max(1.5, 5 - (star.mag + 1.5) * 0.7) * (0.85 + twinkle * 0.15);
+
           ctx.fillStyle = isRed ? "#ff6666" : "#ffffff";
           ctx.shadowColor = isRed ? "rgba(255, 0, 0, 0.8)" : "rgba(0, 240, 255, 0.8)";
-          ctx.shadowBlur = star.mag < 1.0 ? 8 : 2;
+          ctx.shadowBlur = (star.mag < 1.0 ? 8 : 2) * twinkle;
 
           ctx.beginPath();
           ctx.arc(sx, sy, r, 0, Math.PI * 2);
@@ -1015,7 +1181,11 @@ function renderAR() {
     const p = project(rotRA, star.dec, w, h, state.centerRA, state.centerDec, state.roll);
     if (!p.visible) return;
 
-    const r = Math.max(1.5, 5 - (star.mag + 1.5) * 0.7);
+    // Dynamic star twinkling calculations
+    const freq = 2.0 + Math.sin(star.id * 45.67) * 0.8;
+    const phase = star.id * 12.34;
+    const twinkle = 1.0 + Math.sin((Date.now() / 1000) * freq + phase) * 0.22;
+    const r = Math.max(1.5, 5 - (star.mag + 1.5) * 0.7) * (0.85 + twinkle * 0.15);
 
     if (isRed) {
       ctx.fillStyle = "#ff6666";
@@ -1024,7 +1194,7 @@ function renderAR() {
       ctx.fillStyle = "#ffffff";
       ctx.shadowColor = "rgba(0, 240, 255, 0.8)";
     }
-    ctx.shadowBlur = star.mag < 1.0 ? 8 : 2;
+    ctx.shadowBlur = (star.mag < 1.0 ? 8 : 2) * twinkle;
 
     ctx.beginPath();
     ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
