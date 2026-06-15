@@ -63,7 +63,12 @@ const state = {
   smoothRAX: 0,
   smoothRAY: 0,
   orientationInitialized: false,
-  solverWorker: null
+  solverWorker: null,
+  
+  // Tracking and custom star states
+  targetObject: null,
+  customStars: [],
+  lockedTargetSoundPlayed: false
 };
 
 // UI Translations
@@ -243,6 +248,15 @@ function loadState() {
     state.nightMode = true;
     document.body.classList.add("night-mode-red");
   }
+
+  const savedCustom = localStorage.getItem("starfinder_custom_stars");
+  if (savedCustom) {
+    try {
+      state.customStars = JSON.parse(savedCustom);
+    } catch (e) {
+      console.error("Error parsing custom stars:", e);
+    }
+  }
 }
 
 // Save state to LocalStorage
@@ -250,6 +264,7 @@ function saveState() {
   localStorage.setItem("starfinder_badges", JSON.stringify(state.badges));
   localStorage.setItem("starfinder_lang", state.language);
   localStorage.setItem("starfinder_night", state.nightMode);
+  localStorage.setItem("starfinder_custom_stars", JSON.stringify(state.customStars));
 }
 
 // Translate the DOM
@@ -495,8 +510,112 @@ function initUI() {
     updateDirectionHUD();
   });
 
-  canvas.addEventListener("touchend", () => {
-    state.isDragging = false;
+  // Target Search Button Trigger
+  const targetSearchBtn = document.getElementById("target-search-btn");
+  const targetSheet = document.getElementById("target-sheet");
+  const starSearchInput = document.getElementById("star-search-input");
+  
+  if (targetSearchBtn) {
+    targetSearchBtn.addEventListener("click", () => {
+      populateTargetList("");
+      starSearchInput.value = "";
+      targetSheet.classList.add("open");
+    });
+  }
+
+  if (starSearchInput) {
+    starSearchInput.addEventListener("input", (e) => {
+      populateTargetList(e.target.value);
+    });
+  }
+
+  // Cancel Target Trigger
+  const cancelTargetBtn = document.getElementById("cancel-target-btn");
+  if (cancelTargetBtn) {
+    cancelTargetBtn.addEventListener("click", () => {
+      state.targetObject = null;
+      document.getElementById("target-info-card").classList.remove("show");
+    });
+  }
+
+  // Pin Button Trigger (align with center reticle)
+  const pinBtn = document.getElementById("pin-btn");
+  const namingModal = document.getElementById("naming-modal");
+  const customStarNameInput = document.getElementById("custom-star-name-input");
+  
+  // Custom pinned coordinates state
+  let pinnedCoords = null;
+
+  if (pinBtn) {
+    pinBtn.addEventListener("click", () => {
+      pinnedCoords = { ra: state.centerRA, dec: state.centerDec };
+      customStarNameInput.value = "";
+      namingModal.classList.add("show");
+      customStarNameInput.focus();
+    });
+  }
+
+  // Modal Buttons
+  document.getElementById("naming-modal-cancel").addEventListener("click", () => {
+    namingModal.classList.remove("show");
+    pinnedCoords = null;
+  });
+
+  document.getElementById("naming-modal-save").addEventListener("click", () => {
+    const name = customStarNameInput.value.trim();
+    if (!name) {
+      showToastAlert(state.language === "hi" ? "कृपया एक नाम दर्ज करें" : "Please enter a name");
+      return;
+    }
+    
+    if (pinnedCoords) {
+      state.customStars.push({
+        name: name,
+        ra: pinnedCoords.ra,
+        dec: pinnedCoords.dec
+      });
+      saveState();
+      showToastAlert(state.language === "hi" ? "कस्टम तारा सहेजा गया!" : "Custom star saved!");
+      
+      // Auto-target the newly pinned star
+      state.targetObject = {
+        name: name,
+        name_hi: name,
+        ra: pinnedCoords.ra,
+        dec: pinnedCoords.dec,
+        isCustom: true
+      };
+      
+      // Display Target Info Card
+      document.getElementById("target-info-name").textContent = name;
+      document.getElementById("target-info-details").textContent = `RA: ${Math.floor(pinnedCoords.ra / 15)}h ${Math.floor((pinnedCoords.ra/15 % 1)*60)}m | Dec: ${pinnedCoords.dec.toFixed(1)}°`;
+      document.getElementById("target-info-card").classList.add("show");
+
+      namingModal.classList.remove("show");
+      pinnedCoords = null;
+    }
+  });
+
+  // Canvas Double Tap listener
+  let lastTapTime = 0;
+  canvas.addEventListener("touchstart", (e) => {
+    const now = Date.now();
+    if (now - lastTapTime < 300) {
+      // Double tap detected!
+      e.preventDefault();
+      
+      // Get touch coordinates relative to canvas
+      const rect = canvas.getBoundingClientRect();
+      const touchX = e.touches[0].clientX - rect.left;
+      const touchY = e.touches[0].clientY - rect.top;
+      
+      const coords = getRADecFromScreenCoords(touchX, touchY, canvas.width, canvas.height);
+      pinnedCoords = coords;
+      customStarNameInput.value = "";
+      namingModal.classList.add("show");
+      customStarNameInput.focus();
+    }
+    lastTapTime = now;
   });
 
   // Load translations
@@ -1224,6 +1343,35 @@ function renderAR() {
     }
   });
 
+  // 4.1 Draw Custom Pinned Stars (Camera Live Mode)
+  state.customStars.forEach(star => {
+    const rotRA = (star.ra + lst) % 360;
+    const p = project(rotRA, star.dec, w, h, state.centerRA, state.centerDec, state.roll);
+    if (!p.visible) return;
+
+    const pulse = 1.0 + Math.sin(Date.now() / 180) * 0.25;
+    const r = 5 * pulse;
+
+    if (isRed) {
+      ctx.fillStyle = "#ff5555";
+      ctx.shadowColor = "rgba(255, 0, 0, 0.8)";
+    } else {
+      ctx.fillStyle = "#00ffcc";
+      ctx.shadowColor = "rgba(0, 255, 204, 0.8)";
+    }
+    ctx.shadowBlur = 8 * pulse;
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = isRed ? "#ff4444" : "#00ffcc";
+    ctx.font = "bold 10px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`📍 ${star.name}`, p.x + r + 5, p.y + 4);
+  });
+
   // 5. Draw ISS Satellite position (Camera Live Mode)
   const iss = propagateISSLocal(Date.now() + state.timeOffset);
   const pISS = project(iss.ra, iss.dec, w, h, state.centerRA, state.centerDec, state.roll);
@@ -1249,6 +1397,108 @@ function renderAR() {
     ctx.font = "bold 10px 'Orbitron'";
     ctx.textAlign = "center";
     ctx.fillText("ISS", pISS.x, pISS.y - 16);
+  }
+
+  // 6. Draw Selected Target Tracker HUD & Guidance
+  if (state.targetObject) {
+    const targetRotRA = (state.targetObject.ra + lst) % 360;
+    const pTarget = project(targetRotRA, state.targetObject.dec, w, h, state.centerRA, state.centerDec, state.roll);
+    
+    const margin = 24;
+    const onScreen = pTarget.visible && pTarget.x >= margin && pTarget.x <= w - margin && pTarget.y >= margin && pTarget.y <= h - margin;
+    
+    if (onScreen) {
+      // Draw 3D Lock-on targeting reticle ring
+      ctx.save();
+      ctx.shadowBlur = 10;
+      if (isRed) {
+        ctx.strokeStyle = "#ff0000";
+        ctx.shadowColor = "rgba(255, 0, 0, 0.5)";
+      } else {
+        ctx.strokeStyle = "#00ffcc";
+        ctx.shadowColor = "rgba(0, 255, 204, 0.5)";
+      }
+      ctx.lineWidth = 2;
+      
+      ctx.translate(pTarget.x, pTarget.y);
+      ctx.rotate(Date.now() / 500);
+      
+      ctx.beginPath();
+      ctx.arc(0, 0, 24, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.moveTo(-14, 0); ctx.lineTo(-8, 0);
+      ctx.moveTo(8, 0); ctx.lineTo(14, 0);
+      ctx.moveTo(0, -14); ctx.lineTo(0, -8);
+      ctx.moveTo(0, 8); ctx.lineTo(0, 14);
+      ctx.stroke();
+      ctx.restore();
+
+      // Check lock-on centering proximity
+      const distToCenter = Math.hypot(pTarget.x - w/2, pTarget.y - h/2);
+      if (distToCenter < 25) {
+        if (!state.lockedTargetSoundPlayed) {
+          playLockOnSound();
+          state.lockedTargetSoundPlayed = true;
+          showToastAlert(lang === "hi" ? "निशाना लॉक-ऑन!" : "Target Locked-On!");
+        }
+      } else {
+        state.lockedTargetSoundPlayed = false;
+      }
+    } else {
+      // Off-screen guide arrow calculation
+      const r_ra = targetRotRA * Math.PI / 180;
+      const r_dec = state.targetObject.dec * Math.PI / 180;
+      const r_cRA = state.centerRA * Math.PI / 180;
+      const r_cDec = state.centerDec * Math.PI / 180;
+      const r_roll = state.roll * Math.PI / 180;
+
+      const tx = Math.cos(r_dec) * Math.cos(r_ra);
+      const ty = Math.cos(r_dec) * Math.sin(r_ra);
+      const tz = Math.sin(r_dec);
+
+      const tx1 = tx * Math.cos(r_cRA) + ty * Math.sin(r_cRA);
+      const ty1 = -tx * Math.sin(r_cRA) + ty * Math.cos(r_cRA);
+      const tz1 = tz;
+
+      const tx_cam = tx1 * Math.cos(r_cDec) - tz1 * Math.sin(r_cDec);
+      const ty_cam = ty1;
+      const tz_cam = tx1 * Math.sin(r_cDec) + tz1 * Math.cos(r_cDec);
+
+      const trx = tx_cam * Math.cos(r_roll) - ty_cam * Math.sin(r_roll);
+      const try_ = tx_cam * Math.sin(r_roll) + ty_cam * Math.cos(r_roll);
+      
+      const angle = Math.atan2(-trx, try_);
+      
+      const radius = Math.min(w, h) * 0.38;
+      const arrowX = w / 2 + Math.cos(angle) * radius;
+      const arrowY = h / 2 + Math.sin(angle) * radius;
+
+      ctx.save();
+      ctx.translate(arrowX, arrowY);
+      ctx.rotate(angle);
+
+      const pulse = 1.0 + Math.sin(Date.now() / 150) * 0.22;
+      
+      if (isRed) {
+        ctx.fillStyle = "rgba(255, 0, 0, 0.85)";
+        ctx.shadowColor = "rgba(255, 0, 0, 0.5)";
+      } else {
+        ctx.fillStyle = "rgba(0, 240, 255, 0.85)";
+        ctx.shadowColor = "rgba(0, 240, 255, 0.5)";
+      }
+      ctx.shadowBlur = 8;
+
+      ctx.beginPath();
+      ctx.moveTo(-10 * pulse, -8);
+      ctx.lineTo(10 * pulse, 0);
+      ctx.lineTo(-10 * pulse, 8);
+      ctx.lineTo(-5 * pulse, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
   }
 }
 
@@ -1540,3 +1790,153 @@ function updateSyncIndicator() {
 
 window.addEventListener("online", updateSyncIndicator);
 window.addEventListener("offline", updateSyncIndicator);
+
+// Web Audio API Synthesizer lock-on beep sound
+function playLockOnSound() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+    osc.frequency.setValueAtTime(1320, audioCtx.currentTime + 0.08); // E6
+    
+    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.3);
+  } catch (e) {
+    console.warn("AudioContext blocker:", e);
+  }
+}
+
+// Convert screen coordinates to RA/Dec based on current orientation and field of view
+function getRADecFromScreenCoords(x, y, w, h) {
+  const dx = x - w/2;
+  const dy = h/2 - y; // invert Y for Cartesian
+  const f = Math.max(w, h) * 0.95; // Focal length matching project()
+  
+  const ry = dx / f;
+  const rx = dy / f;
+  const rz = 1.0; // depth proxy
+  
+  const r_cRA = state.centerRA * Math.PI / 180;
+  const r_cDec = state.centerDec * Math.PI / 180;
+  const r_roll = state.roll * Math.PI / 180;
+  
+  // Un-roll
+  const x_cam = rx * Math.cos(-r_roll) - ry * Math.sin(-r_roll);
+  const y_cam = rx * Math.sin(-r_roll) + ry * Math.cos(-r_roll);
+  const z_cam = rz;
+  
+  // Un-pitch (Rotate around Y-axis by CenterDec)
+  const x1 = x_cam * Math.cos(r_cDec) + z_cam * Math.sin(r_cDec);
+  const y1 = y_cam;
+  const z1 = -x_cam * Math.sin(r_cDec) + z_cam * Math.cos(r_cDec);
+  
+  // Un-yaw (Rotate around Z-axis by CenterRA)
+  const x_cel = x1 * Math.cos(r_cRA) - y1 * Math.sin(r_cRA);
+  const y_cel = x1 * Math.sin(r_cRA) + y1 * Math.cos(r_cRA);
+  const z_cel = z1;
+  
+  // Cartesian relative coordinates on unit sphere back to spherical RA/Dec
+  const r = Math.hypot(x_cel, y_cel, z_cel);
+  const dec = Math.asin(z_cel / r) * 180 / Math.PI;
+  let ra = Math.atan2(y_cel, x_cel) * 180 / Math.PI;
+  ra = (ra + 360) % 360;
+  
+  return { ra, dec };
+}
+
+// Populate search list of targets
+function populateTargetList(filter) {
+  const list = document.getElementById("stars-target-list");
+  if (!list) return;
+
+  list.innerHTML = "";
+  const lang = state.language;
+  const filterText = filter.toLowerCase().trim();
+
+  const allTargetables = [];
+
+  // 1. Custom Pinned Stars first
+  state.customStars.forEach(cs => {
+    allTargetables.push({
+      id: "custom_" + cs.name,
+      name: cs.name,
+      name_hi: cs.name,
+      ra: cs.ra,
+      dec: cs.dec,
+      mag: 3.5,
+      isCustom: true,
+      detailsText: lang === "hi" ? "सहेजा गया तारा" : "Custom Saved Star"
+    });
+  });
+
+  // 2. Curated Database Stars
+  STARS_DB.stars.forEach(star => {
+    const starName = lang === "hi" ? star.name_hi : star.name;
+    allTargetables.push({
+      id: star.id,
+      name: star.name,
+      name_hi: star.name_hi,
+      ra: star.ra,
+      dec: star.dec,
+      mag: star.mag,
+      isCustom: false,
+      detailsText: `Mag: ${star.mag} | Dec: ${star.dec.toFixed(0)}°`
+    });
+  });
+
+  const filtered = allTargetables.filter(item => {
+    return item.name.toLowerCase().includes(filterText) || 
+           item.name_hi.toLowerCase().includes(filterText) ||
+           item.detailsText.toLowerCase().includes(filterText);
+  });
+
+  filtered.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "target-star-item";
+    if (state.targetObject && state.targetObject.name === item.name) {
+      row.className += " active-target";
+    }
+
+    const displayName = lang === "hi" ? item.name_hi : item.name;
+    row.innerHTML = `
+      <div>
+        <div class="target-star-item-name">${item.isCustom ? "📍 " : "⭐ "}${displayName}</div>
+        <div class="target-star-item-details">${item.detailsText}</div>
+      </div>
+      <span style="font-size: 14px;">🎯</span>
+    `;
+
+    row.addEventListener("click", () => {
+      state.targetObject = item;
+      state.lockedTargetSoundPlayed = false;
+      document.getElementById("target-sheet").classList.remove("open");
+
+      // Slide-in target info HUD card
+      document.getElementById("target-info-name").textContent = displayName;
+      if (item.isCustom) {
+        document.getElementById("target-info-details").textContent = item.detailsText;
+      } else {
+        let conText = "";
+        if (item.id) {
+          const conMap = STARS_DB.constellations.find(c => c.lines.some(l => l.includes(item.id)));
+          if (conMap) {
+            conText = ` | ${lang === "hi" ? conMap.name_hi : conMap.name}`;
+          }
+        }
+        document.getElementById("target-info-details").textContent = `Distance: ${(item.mag < 0 ? 8.6 : (item.mag < 1.0 ? 25 : 150))} LY | Mag: ${item.mag}${conText}`;
+      }
+      document.getElementById("target-info-card").classList.add("show");
+    });
+
+    list.appendChild(row);
+  });
+}

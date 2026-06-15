@@ -37,6 +37,10 @@
             <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
           </svg>
         </button>
+
+        <button id="target-search-btn" class="header-btn" title="Track Star / Object" style="font-size: 18px;">
+          🎯
+        </button>
         
         <div id="direction-text" class="direction-hud">
           Facing: <span>Scanning...</span> | RA: <span>--h --m</span> | Dec: <span>--°</span>
@@ -98,6 +102,10 @@
               </svg>
             </button>
           </div>
+
+          <button id="pin-btn" class="header-btn" title="Pin Current Center" style="width: 56px; height: 56px; border-radius: 50%; font-size: 20px;">
+            📍
+          </button>
         </div>
 
       </div>
@@ -251,6 +259,49 @@
       <div class="toast-content">
         <div class="toast-title" data-translate="toastAchievement">ACHIEVEMENT UNLOCKED!</div>
         <div id="toast-badge-name" class="toast-name">Orion Hunter</div>
+      </div>
+    </div>
+
+    <!-- Target Tracker Selector Bottom Sheet -->
+    <div id="target-sheet" class="bottom-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">TRACK STAR / OBJECT</div>
+        <button class="close-sheet-btn">&times;</button>
+      </div>
+      <div class="sheet-body" style="display: flex; flex-direction: column; gap: 12px; padding-bottom: 25px;">
+        <div class="search-box-container">
+          <input type="text" id="star-search-input" placeholder="Search stars (e.g. Sirius, Polaris)..." style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: #fff; outline: none; font-family: inherit;">
+        </div>
+        <div id="stars-target-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+          <!-- Populated dynamically by app.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Target HUD info card (slides in when star is selected) -->
+    <div id="target-info-card" class="target-info-card">
+      <div class="target-info-body">
+        <div style="flex-grow: 1;">
+          <div id="target-info-name" style="font-family: var(--font-family-mono); font-weight: bold; font-size: 15px; color: var(--accent);">Sirius (Vyadha)</div>
+          <div id="target-info-details" style="font-size: 11px; color: var(--text-secondary); margin-top: 3px;">Distance: 8.6 LY | Mag: -1.46</div>
+        </div>
+        <button id="cancel-target-btn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 11px; min-width: auto; height: auto; border-radius: 8px; margin: 0;">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- Custom Star Naming Modal -->
+    <div id="naming-modal" class="modal-overlay">
+      <div class="modal-content">
+        <h3 style="color: var(--accent); margin-top: 0; font-family: var(--font-family-mono); font-size: 18px;">Name Custom Star</h3>
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 15px; line-height: 1.4;">Enter a name to save this celestial direction to your device's offline memory.</p>
+        <input type="text" id="custom-star-name-input" placeholder="e.g. My Favorite Star" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: #fff; margin-bottom: 20px; outline: none; font-family: inherit;">
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button id="naming-modal-cancel" class="btn btn-secondary" style="padding: 8px 16px; min-width: auto; height: auto; font-size: 13px; border-radius: 10px;">Cancel</button>
+          <button id="naming-modal-save" class="btn btn-primary" style="padding: 8px 16px; min-width: auto; height: auto; font-size: 13px; border-radius: 10px;">Save</button>
+        </div>
       </div>
     </div>
 

@@ -1005,3 +1005,128 @@ body.night-mode-red #analysis-overlay {
 .sheet-body::-webkit-scrollbar-thumb:hover {
   background: var(--accent);
 }
+
+/* ==========================================================================
+   Celestial Target Tracking & Pinning CSS Styles
+   ========================================================================== */
+
+/* Target HUD Info Card */
+.target-info-card {
+  position: absolute;
+  bottom: 180px; /* Float above the bottom HUD capture and time slider */
+  left: 50%;
+  transform: translateX(-50%) translateY(30px);
+  width: 90%;
+  max-width: 400px;
+  background: var(--bg-glass-heavy);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--border-glow);
+  border-radius: 20px;
+  padding: 16px;
+  z-index: 10;
+  backdrop-filter: blur(20px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+.target-info-card.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.target-info-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Modal Overlay for Naming Custom Star */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(4, 8, 20, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-content {
+  width: 90%;
+  max-width: 380px;
+  background: var(--bg-glass-heavy);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--border-glow);
+  border-radius: 24px;
+  padding: 24px;
+  transform: scale(0.9);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.modal-overlay.show .modal-content {
+  transform: scale(1);
+}
+
+/* Star Target Selection List Item */
+.target-star-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.target-star-item:hover {
+  background: rgba(var(--accent-rgb), 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.2);
+}
+.target-star-item.active-target {
+  background: rgba(var(--accent-rgb), 0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.3);
+}
+.target-star-item-name {
+  font-weight: bold;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.target-star-item-details {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* Night Vision Red Mode Overrides */
+.night-mode-red .target-info-card {
+  border-color: var(--border-color);
+  box-shadow: var(--border-glow);
+}
+.night-mode-red .modal-content {
+  border-color: var(--border-color);
+  box-shadow: var(--border-glow);
+}
+.night-mode-red .target-star-item:hover {
+  background: rgba(255, 0, 0, 0.1);
+  border-color: #ff0000;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.2);
+}
+.night-mode-red .target-star-item.active-target {
+  background: rgba(255, 0, 0, 0.15);
+  border-color: #ff0000;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+}
+
