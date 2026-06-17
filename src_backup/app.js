@@ -68,7 +68,11 @@ const state = {
   // Tracking and custom star states
   targetObject: null,
   customStars: [],
-  lockedTargetSoundPlayed: false
+  lockedTargetSoundPlayed: false,
+
+  // Free vs Pro Gating State
+  isPro: false,
+  scanCount: 0
 };
 
 // UI Translations
@@ -225,6 +229,7 @@ window.addEventListener("DOMContentLoaded", () => {
   startRendering();
   updateSyncIndicator();
   fetchLatestISSOrbit();
+  updateProUI(); // Initialize Pro states on startup
 });
 
 // Load state from LocalStorage
@@ -257,6 +262,14 @@ function loadState() {
       console.error("Error parsing custom stars:", e);
     }
   }
+
+  const savedPro = localStorage.getItem("starfinder_is_pro");
+  state.isPro = savedPro === "true";
+
+  const savedCount = localStorage.getItem("starfinder_scan_count");
+  if (savedCount) {
+    state.scanCount = parseInt(savedCount, 10);
+  }
 }
 
 // Save state to LocalStorage
@@ -265,6 +278,8 @@ function saveState() {
   localStorage.setItem("starfinder_lang", state.language);
   localStorage.setItem("starfinder_night", state.nightMode);
   localStorage.setItem("starfinder_custom_stars", JSON.stringify(state.customStars));
+  localStorage.setItem("starfinder_is_pro", state.isPro);
+  localStorage.setItem("starfinder_scan_count", state.scanCount);
 }
 
 // Translate the DOM
@@ -361,6 +376,14 @@ function initUI() {
   const timeSlider = document.getElementById("time-travel-slider");
   const nowLabel = document.getElementById("time-label-now");
   timeSlider.addEventListener("input", (e) => {
+    if (!state.isPro) {
+      e.target.value = 0;
+      state.timeOffset = 0;
+      nowLabel.classList.add("active");
+      document.getElementById("pro-modal").classList.add("show");
+      updateDirectionHUD();
+      return;
+    }
     const val = parseInt(e.target.value); // Offset in hours
     state.timeOffset = val * 3600 * 1000; // MS offset
 
@@ -395,12 +418,20 @@ function initUI() {
   // Menu clicks
   document.getElementById("menu-achievements").addEventListener("click", () => {
     closeDrawer();
+    if (!state.isPro) {
+      document.getElementById("pro-modal").classList.add("show");
+      return;
+    }
     renderBadges();
     document.getElementById("achievements-sheet").classList.add("open");
   });
 
   document.getElementById("menu-alerts").addEventListener("click", () => {
     closeDrawer();
+    if (!state.isPro) {
+      document.getElementById("pro-modal").classList.add("show");
+      return;
+    }
     renderAlerts();
     document.getElementById("alerts-sheet").classList.add("open");
   });
@@ -548,6 +579,10 @@ function initUI() {
 
   if (pinBtn) {
     pinBtn.addEventListener("click", () => {
+      if (!state.isPro) {
+        document.getElementById("pro-modal").classList.add("show");
+        return;
+      }
       pinnedCoords = { ra: state.centerRA, dec: state.centerDec };
       customStarNameInput.value = "";
       namingModal.classList.add("show");
@@ -604,6 +639,11 @@ function initUI() {
       // Double tap detected!
       e.preventDefault();
       
+      if (!state.isPro) {
+        document.getElementById("pro-modal").classList.add("show");
+        return;
+      }
+      
       // Get touch coordinates relative to canvas
       const rect = canvas.getBoundingClientRect();
       const touchX = e.touches[0].clientX - rect.left;
@@ -617,6 +657,36 @@ function initUI() {
     }
     lastTapTime = now;
   });
+
+  // Pro Modal Buttons
+  const proModal = document.getElementById("pro-modal");
+  const licenseKeyInput = document.getElementById("license-key-input");
+  const activateLicenseBtn = document.getElementById("activate-license-btn");
+  const closeProBtn = document.getElementById("close-pro-btn");
+
+  if (activateLicenseBtn) {
+    activateLicenseBtn.addEventListener("click", () => {
+      const key = licenseKeyInput.value;
+      if (checkProLicense(key)) {
+        state.isPro = true;
+        saveState();
+        updateProUI();
+        showToastAlert(state.language === "hi" 
+          ? "स्टारफाइंडर प्रो सफलतापूर्वक सक्रिय हुआ! 🌟" 
+          : "StarFinder Pro Activated Successfully! 🌟");
+      } else {
+        showToastAlert(state.language === "hi" 
+          ? "अमान्य लाइसेंस कुंजी! कृपया पुनः प्रयास करें।" 
+          : "Invalid License Key! Please try again.");
+      }
+    });
+  }
+
+  if (closeProBtn) {
+    closeProBtn.addEventListener("click", () => {
+      proModal.classList.remove("show");
+    });
+  }
 
   // Load translations
   translateUI();
@@ -646,6 +716,13 @@ function handleSolverResult(response) {
 
   if (response && response.success && response.result.solved) {
     const result = response.result;
+    
+    if (!state.isPro) {
+      state.scanCount++;
+      saveState();
+      updateProUI();
+    }
+    
     state.solvedResult = result;
     
     const matches = result.matches || [];
@@ -917,6 +994,10 @@ function getLocalSiderealTime() {
 // Trigger Plate Solving Scan
 function triggerScan() {
   if (state.solving) return;
+  if (!state.isPro && state.scanCount >= 3) {
+    document.getElementById("pro-modal").classList.add("show");
+    return;
+  }
   
   state.solving = true;
   const overlay = document.getElementById("analysis-overlay");
@@ -940,6 +1021,11 @@ function triggerScan() {
     state.solving = false;
 
     if (result.solved) {
+      if (!state.isPro) {
+        state.scanCount++;
+        saveState();
+        updateProUI();
+      }
       state.solvedResult = result;
       
       // Find the main matched constellation (the one with the most star matches)
@@ -986,6 +1072,11 @@ function triggerScan() {
 // Trigger Plate Solving for Uploaded Photo
 function triggerScanForUploadedImage(img) {
   if (state.solving) return;
+  if (!state.isPro && state.scanCount >= 3) {
+    state.uploadedImage = null; // Reset
+    document.getElementById("pro-modal").classList.add("show");
+    return;
+  }
 
   state.solving = true;
   const overlay = document.getElementById("analysis-overlay");
@@ -1021,6 +1112,11 @@ function triggerScanForUploadedImage(img) {
     state.solving = false;
 
     if (result.solved) {
+      if (!state.isPro) {
+        state.scanCount++;
+        saveState();
+        updateProUI();
+      }
       state.solvedResult = result;
 
       // Find matched constellation
@@ -1865,18 +1961,20 @@ function populateTargetList(filter) {
   const allTargetables = [];
 
   // 1. Custom Pinned Stars first
-  state.customStars.forEach(cs => {
-    allTargetables.push({
-      id: "custom_" + cs.name,
-      name: cs.name,
-      name_hi: cs.name,
-      ra: cs.ra,
-      dec: cs.dec,
-      mag: 3.5,
-      isCustom: true,
-      detailsText: lang === "hi" ? "सहेजा गया तारा" : "Custom Saved Star"
+  if (state.isPro) {
+    state.customStars.forEach(cs => {
+      allTargetables.push({
+        id: "custom_" + cs.name,
+        name: cs.name,
+        name_hi: cs.name,
+        ra: cs.ra,
+        dec: cs.dec,
+        mag: 3.5,
+        isCustom: true,
+        detailsText: lang === "hi" ? "सहेजा गया तारा" : "Custom Saved Star"
+      });
     });
-  });
+  }
 
   // 2. Curated Database Stars
   STARS_DB.stars.forEach(star => {
@@ -1939,4 +2037,66 @@ function populateTargetList(filter) {
 
     list.appendChild(row);
   });
+}
+
+// Check offline license key validity using a digit-checksum algorithm
+function checkProLicense(key) {
+  if (!key) return false;
+  
+  const cleanKey = key.trim().toUpperCase();
+  
+  // Test/Developer bypass key
+  if (cleanKey === "SF-777-PRO" || cleanKey === "SF-TEST-PRO") {
+    return true;
+  }
+  
+  // Format check: SF-XXX-PRO
+  if (!cleanKey.startsWith("SF-") || !cleanKey.endsWith("-PRO")) {
+    return false;
+  }
+  
+  // Extract number part
+  const numPart = cleanKey.substring(3, cleanKey.length - 4);
+  if (numPart.length !== 3 || isNaN(numPart)) {
+    return false;
+  }
+  
+  // Checksum calculation: sum of digits must equal 21
+  let sum = 0;
+  for (let i = 0; i < numPart.length; i++) {
+    sum += parseInt(numPart.charAt(i), 10);
+  }
+  
+  return sum === 21;
+}
+
+// Update UI elements based on Pro status
+function updateProUI() {
+  const badge = document.getElementById("scan-counter-badge");
+  const proModal = document.getElementById("pro-modal");
+  
+  if (state.isPro) {
+    if (badge) badge.style.display = "none";
+    if (proModal) proModal.classList.remove("show");
+  } else {
+    if (badge) {
+      badge.style.display = "block";
+      const remaining = Math.max(0, 3 - state.scanCount);
+      const lang = state.language;
+      
+      if (remaining === 0) {
+        badge.textContent = lang === "hi" ? "स्कैन समाप्त (Get Pro)" : "0 Scans Left (Get Pro)";
+        badge.style.borderColor = "#ff3333";
+        badge.style.color = "#ff3333";
+        badge.style.boxShadow = "0 0 10px rgba(255, 51, 51, 0.4)";
+      } else {
+        badge.textContent = lang === "hi" 
+          ? `${remaining} स्कैन बचे` 
+          : `${remaining} Scan${remaining !== 1 ? 's' : ''} Left`;
+        badge.style.borderColor = "";
+        badge.style.color = "";
+        badge.style.boxShadow = "";
+      }
+    }
+  }
 }

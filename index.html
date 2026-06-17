@@ -101,6 +101,7 @@
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
               </svg>
             </button>
+            <div id="scan-counter-badge" class="scan-counter-badge">3 Scans Left</div>
           </div>
 
           <button id="pin-btn" class="header-btn" title="Pin Current Center" style="width: 56px; height: 56px; border-radius: 50%; font-size: 20px;">
@@ -302,6 +303,80 @@
           <button id="naming-modal-cancel" class="btn btn-secondary" style="padding: 8px 16px; min-width: auto; height: auto; font-size: 13px; border-radius: 10px;">Cancel</button>
           <button id="naming-modal-save" class="btn btn-primary" style="padding: 8px 16px; min-width: auto; height: auto; font-size: 13px; border-radius: 10px;">Save</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Pro Upgrade Modal -->
+    <div id="pro-modal" class="modal-overlay">
+      <div class="modal-content pro-modal-content" style="max-width: 420px; border: 1px solid #d4af37; box-shadow: 0 0 25px rgba(212, 175, 55, 0.25);">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <span style="font-size: 44px; display: block; margin-bottom: 8px;">🌟</span>
+          <h3 style="color: #d4af37; margin: 0; font-family: var(--font-family-mono); font-size: 22px; letter-spacing: 0.05em;">STARFINDER PRO</h3>
+          <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.1em;">Unlock the Full Universe</p>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; font-size: 13px; color: var(--text-secondary);">
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span style="font-size: 16px; line-height: 1;">🚀</span>
+            <div>
+              <strong style="color: #fff; display: block;">Unlimited Sky Scanning</strong>
+              <span style="font-size: 11px;">Analyze and solve constellations without limits (Free: 3 scans).</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span style="font-size: 16px; line-height: 1;">📍</span>
+            <div>
+              <strong style="color: #fff; display: block;">Custom Star Pinning</strong>
+              <span style="font-size: 11px;">Mark, name, and permanently save your favorite stars in the sky.</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span style="font-size: 16px; line-height: 1;">⏳</span>
+            <div>
+              <strong style="color: #fff; display: block;">Interactive Time Travel</strong>
+              <span style="font-size: 11px;">Fast-forward or rewind time to observe shifts in star orientations.</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span style="font-size: 16px; line-height: 1;">🛰️</span>
+            <div>
+              <strong style="color: #fff; display: block;">Satellite & Meteor Alerts</strong>
+              <span style="font-size: 11px;">Track the ISS overhead pass times and access meteor shower dates.</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <span style="font-size: 16px; line-height: 1;">🏆</span>
+            <div>
+              <strong style="color: #fff; display: block;">Achievements & Badges</strong>
+              <span style="font-size: 11px;">Collect badges for identifying constellations, orbits, and events.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Purchase & Activation Controls -->
+        <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid rgba(212,175,55,0.15); padding-top: 15px;">
+          <a href="https://example.com/starfinder-pro" target="_blank" class="btn btn-primary" style="background: linear-gradient(135deg, #d4af37, #aa7c11); border: none; color: #000; font-weight: bold; text-align: center; text-decoration: none; padding: 12px; border-radius: 12px; display: block; font-size: 14px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);">
+            GET PRO - $4.99 (₹399)
+          </a>
+          
+          <div style="text-align: center; font-size: 11px; color: var(--text-muted); margin: 4px 0;">
+            — OR ACTIVATE OFFLINE LICENSE —
+          </div>
+          
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="license-key-input" placeholder="Enter License Key (e.g. SF-XXX-PRO)" style="flex-grow: 1; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.3); color: #fff; font-size: 12px; outline: none; font-family: var(--font-family-mono);">
+            <button id="activate-license-btn" class="btn btn-primary" style="background: transparent; border: 1px solid #d4af37; color: #d4af37; font-size: 12px; padding: 0 16px; border-radius: 10px; min-width: auto; height: auto;">
+              Activate
+            </button>
+          </div>
+          <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 4px;">
+            ℹ️ Developers: Test key is <code style="color: #d4af37; background: rgba(212,175,55,0.1); padding: 2px 4px; border-radius: 4px;">SF-777-PRO</code>
+          </div>
+        </div>
+
+        <button id="close-pro-btn" class="btn btn-secondary" style="width: 100%; margin-top: 15px; padding: 10px; border-radius: 10px; font-size: 12px;">
+          Close / Continue Free
+        </button>
       </div>
     </div>
 

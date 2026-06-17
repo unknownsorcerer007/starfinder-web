@@ -1130,3 +1130,60 @@ body.night-mode-red #analysis-overlay {
   box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
 }
 
+/* scan-counter-badge styling */
+.scan-counter-badge {
+  position: absolute;
+  top: -16px; /* float above scan button */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: bold;
+  font-family: var(--font-family-mono);
+  box-shadow: var(--border-glow);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Pro Modal content gold styling */
+.pro-modal-content {
+  border-color: #d4af37 !important;
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.25) !important;
+}
+
+/* Night mode overrides for Pro Tier */
+.night-mode-red .scan-counter-badge {
+  background: rgba(255, 0, 0, 0.15);
+  border-color: #ff0000;
+  color: #ff0000;
+  box-shadow: var(--border-glow);
+}
+.night-mode-red .pro-modal-content {
+  border-color: #ff0000 !important;
+  box-shadow: 0 0 25px rgba(255, 0, 0, 0.25) !important;
+}
+.night-mode-red .pro-modal-content h3 {
+  color: #ff0000 !important;
+}
+.night-mode-red .pro-modal-content a.btn-primary {
+  background: linear-gradient(135deg, #ff0000, #990000) !important;
+  color: #fff !important;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.25) !important;
+}
+.night-mode-red .pro-modal-content code {
+  color: #ff0000 !important;
+  background: rgba(255, 0, 0, 0.1) !important;
+}
+.night-mode-red .pro-modal-content input {
+  border-color: rgba(255, 0, 0, 0.3) !important;
+}
+.night-mode-red .pro-modal-content button#activate-license-btn {
+  border-color: #ff0000 !important;
+  color: #ff0000 !important;
+}
+
