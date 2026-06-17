@@ -64,7 +64,7 @@ function runBuild() {
     stringArray: true,
     stringArrayThreshold: 0.75,
     // Exclude DOM-bound globals to prevent reference breaks
-    reservedNames: ["STARS_DB", "PlateSolver", "state", "TRANSLATIONS", "CONSTELLATION_INFO"],
+    reservedNames: ["STARS_DB", "PlateSolver", "TRANSLATIONS", "CONSTELLATION_INFO"],
     splitStrings: true,
     unicodeEscapeSequence: false
   };

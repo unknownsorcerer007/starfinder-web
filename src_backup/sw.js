@@ -1,6 +1,6 @@
 // StarFinder Web - Service Worker for Offline PWA support (sw.js)
 
-const CACHE_NAME = "starfinder-cache-v1";
+const CACHE_NAME = "starfinder-cache-v2";
 const ASSETS = [
   "index.html",
   "about.html",
