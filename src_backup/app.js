@@ -72,7 +72,10 @@ const state = {
 
   // Free vs Pro Gating State
   isPro: false,
-  scanCount: 0
+  scanCount: 0,
+  
+  // Event blocking state to prevent click-through
+  blockCanvasEvents: false
 };
 
 // UI Translations
@@ -151,7 +154,6 @@ const TRANSLATIONS = {
     proOrLabel: "— OR ENTER OFFLINE UNLOCK CODE —",
     proKeyPlaceholder: "Enter Unlock Code",
     proActivateBtn: "Activate",
-    proDevInfo: "ℹ️ Developers: Test code is <code style='color: #d4af37; background: rgba(212,175,55,0.1); padding: 2px 4px; border-radius: 4px;'>SF-TEST-PRO</code>",
     proCloseBtn: "Close / Continue Free",
 
     // Tooltips
@@ -237,7 +239,6 @@ const TRANSLATIONS = {
     proOrLabel: "— या ऑफ़लाइन अनलॉक कोड दर्ज करें —",
     proKeyPlaceholder: "अनलॉक कोड दर्ज करें",
     proActivateBtn: "सक्रिय करें",
-    proDevInfo: "ℹ️ डेवलपर्स: परीक्षण कोड <code style='color: #d4af37; background: rgba(212,175,55,0.1); padding: 2px 4px; border-radius: 4px;'>SF-TEST-PRO</code> है",
     proCloseBtn: "बंद करें / मुफ़्त जारी रखें",
 
     // Tooltips
@@ -427,6 +428,14 @@ function updateDirectionHUD() {
   }
 }
 
+// Temporarily block canvas mouse/touch interaction to prevent ghost clicks (tap-throughs)
+function blockCanvasTemporarily() {
+  state.blockCanvasEvents = true;
+  setTimeout(() => {
+    state.blockCanvasEvents = false;
+  }, 400);
+}
+
 // Initialize User Interface Events
 function initUI() {
   // Drawer Toggles
@@ -500,10 +509,11 @@ function initUI() {
   document.querySelectorAll(".close-sheet-btn").forEach(btn => {
     btn.addEventListener("click", (e) => {
       const sheet = e.target.closest(".bottom-sheet");
-      sheet.classList.remove("open");
+      if (sheet) sheet.classList.remove("open");
+      blockCanvasTemporarily();
       
       // If closing solved sheet, reset solver highlights and uploaded image
-      if (sheet.id === "results-sheet") {
+      if (sheet && sheet.id === "results-sheet") {
         state.highlightedConstellation = null;
         state.solvedResult = null;
         state.uploadedImage = null;
@@ -584,6 +594,7 @@ function initUI() {
 
   // Setup drag event handlers for desktop simulator fallback
   canvas.addEventListener("mousedown", (e) => {
+    if (state.blockCanvasEvents) return;
     if (!state.isDesktopSimulator) return;
     state.isDragging = true;
     state.prevMouseX = e.clientX;
@@ -614,6 +625,7 @@ function initUI() {
 
   // Support Touch events for mobile dragging
   canvas.addEventListener("touchstart", (e) => {
+    if (state.blockCanvasEvents) return;
     if (!state.isDesktopSimulator) return;
     state.isDragging = true;
     state.prevMouseX = e.touches[0].clientX;
@@ -690,6 +702,7 @@ function initUI() {
   document.getElementById("naming-modal-cancel").addEventListener("click", () => {
     namingModal.classList.remove("show");
     pinnedCoords = null;
+    blockCanvasTemporarily();
   });
 
   document.getElementById("naming-modal-save").addEventListener("click", () => {
@@ -724,12 +737,14 @@ function initUI() {
 
       namingModal.classList.remove("show");
       pinnedCoords = null;
+      blockCanvasTemporarily();
     }
   });
 
   // Canvas Double Tap listener
   let lastTapTime = 0;
   canvas.addEventListener("touchstart", (e) => {
+    if (state.blockCanvasEvents) return;
     const now = Date.now();
     if (now - lastTapTime < 300) {
       // Double tap detected!
@@ -767,13 +782,14 @@ function initUI() {
         state.isPro = true;
         saveState();
         updateProUI();
+        blockCanvasTemporarily();
         showToastAlert(state.language === "hi" 
           ? "स्टारफाइंडर प्रो सफलतापूर्वक सक्रिय हुआ! 🌟" 
           : "StarFinder Pro Activated Successfully! 🌟");
       } else {
         showToastAlert(state.language === "hi" 
-          ? "अमान्य लाइसेंस कुंजी! कृपया पुनः प्रयास करें।" 
-          : "Invalid License Key! Please try again.");
+          ? "अमान्य अनलॉक कोड! कृपया पुनः प्रयास करें।" 
+          : "Invalid Unlock Code! Please try again.");
       }
     });
   }
@@ -781,6 +797,7 @@ function initUI() {
   if (closeProBtn) {
     closeProBtn.addEventListener("click", () => {
       proModal.classList.remove("show");
+      blockCanvasTemporarily();
     });
   }
 
