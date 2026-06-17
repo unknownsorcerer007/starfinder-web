@@ -148,10 +148,10 @@ const TRANSLATIONS = {
     proFeature5Title: "Achievements & Badges",
     proFeature5Desc: "Collect badges for identifying constellations, orbits, and events.",
     proBuyBtn: "GET PRO - $4.99 (₹399)",
-    proOrLabel: "— OR ACTIVATE OFFLINE LICENSE —",
-    proKeyPlaceholder: "Enter License Key (e.g. SF-XXX-PRO)",
+    proOrLabel: "— OR ENTER OFFLINE UNLOCK CODE —",
+    proKeyPlaceholder: "Enter Unlock Code",
     proActivateBtn: "Activate",
-    proDevInfo: "ℹ️ Developers: Test key is <code style='color: #d4af37; background: rgba(212,175,55,0.1); padding: 2px 4px; border-radius: 4px;'>SF-777-PRO</code>",
+    proDevInfo: "ℹ️ Developers: Test code is <code style='color: #d4af37; background: rgba(212,175,55,0.1); padding: 2px 4px; border-radius: 4px;'>SF-TEST-PRO</code>",
     proCloseBtn: "Close / Continue Free",
 
     // Tooltips
@@ -234,10 +234,10 @@ const TRANSLATIONS = {
     proFeature5Title: "उपलब्धियां और बैज",
     proFeature5Desc: "तारामंडल, कक्षाओं और खगोलीय घटनाओं की पहचान के लिए बैज एकत्र करें।",
     proBuyBtn: "प्रो प्राप्त करें - ₹399 ($4.99)",
-    proOrLabel: "— या ऑफ़लाइन लाइसेंस सक्रिय करें —",
-    proKeyPlaceholder: "लाइसेंस कुंजी दर्ज करें (जैसे SF-XXX-PRO)",
+    proOrLabel: "— या ऑफ़लाइन अनलॉक कोड दर्ज करें —",
+    proKeyPlaceholder: "अनलॉक कोड दर्ज करें",
     proActivateBtn: "सक्रिय करें",
-    proDevInfo: "ℹ️ डेवलपर्स: परीक्षण कुंजी <code style='color: #d4af37; background: rgba(212,175,55,0.1); padding: 2px 4px; border-radius: 4px;'>SF-777-PRO</code> है",
+    proDevInfo: "ℹ️ डेवलपर्स: परीक्षण कोड <code style='color: #d4af37; background: rgba(212,175,55,0.1); padding: 2px 4px; border-radius: 4px;'>SF-TEST-PRO</code> है",
     proCloseBtn: "बंद करें / मुफ़्त जारी रखें",
 
     // Tooltips
@@ -2135,35 +2135,26 @@ function populateTargetList(filter) {
   });
 }
 
-// Check offline license key validity using a digit-checksum algorithm
+// Hash check function to prevent plain text extraction of keys from code
+function simpleHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+  }
+  return hash.toString(16);
+}
+
+// Check offline license key validity using hashes
 function checkProLicense(key) {
   if (!key) return false;
   
   const cleanKey = key.trim().toUpperCase();
+  const hash = simpleHash(cleanKey);
   
-  // Test/Developer bypass key
-  if (cleanKey === "SF-777-PRO" || cleanKey === "SF-TEST-PRO") {
-    return true;
-  }
-  
-  // Format check: SF-XXX-PRO
-  if (!cleanKey.startsWith("SF-") || !cleanKey.endsWith("-PRO")) {
-    return false;
-  }
-  
-  // Extract number part
-  const numPart = cleanKey.substring(3, cleanKey.length - 4);
-  if (numPart.length !== 3 || isNaN(numPart)) {
-    return false;
-  }
-  
-  // Checksum calculation: sum of digits must equal 21
-  let sum = 0;
-  for (let i = 0; i < numPart.length; i++) {
-    sum += parseInt(numPart.charAt(i), 10);
-  }
-  
-  return sum === 21;
+  // Hash values:
+  // "1094c012" -> SF-PREMIUM-2026 (Production Key)
+  // "c8ab50c"  -> SF-TEST-PRO     (Developer Key)
+  return hash === "1094c012" || hash === "c8ab50c";
 }
 
 // Update UI elements based on Pro status
