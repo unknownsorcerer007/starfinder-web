@@ -32,13 +32,13 @@
     <div class="hud-layer">
       <!-- Top HUD Header -->
       <header class="interactive">
-        <button id="menu-btn" class="header-btn" title="Settings / Drawer">
+        <button id="menu-btn" class="header-btn" title="Settings / Drawer" data-translate-title="menuBtnTitle">
           <svg viewBox="0 0 24 24">
             <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
           </svg>
         </button>
 
-        <button id="target-search-btn" class="header-btn" title="Track Star / Object" style="font-size: 18px;">
+        <button id="target-search-btn" class="header-btn" title="Track Star / Object" style="font-size: 18px;" data-translate-title="trackBtnTitle">
           🎯
         </button>
         
@@ -46,7 +46,7 @@
           Facing: <span>Scanning...</span> | RA: <span>--h --m</span> | Dec: <span>--°</span>
         </div>
         
-        <label class="header-btn" style="border-radius: 50%; overflow: hidden;" title="Toggle Night Vision Mode">
+        <label class="header-btn" style="border-radius: 50%; overflow: hidden;" title="Toggle Night Vision Mode" data-translate-title="nightBtnTitle">
           <input type="checkbox" id="night-mode-toggle" style="display:none;">
           <svg viewBox="0 0 24 24" style="cursor: pointer; fill: currentColor;">
             <!-- Moon / Eye icon shape -->
@@ -89,13 +89,13 @@
           <!-- Hidden file input -->
           <input type="file" id="photo-upload" accept="image/*" style="display:none;">
           
-          <button id="upload-btn" class="header-btn" title="Upload Sky Photo" style="width: 56px; height: 56px; border-radius: 50%; font-size: 20px;">
+          <button id="upload-btn" class="header-btn" title="Upload Sky Photo" style="width: 56px; height: 56px; border-radius: 50%; font-size: 20px;" data-translate-title="uploadBtnTitle">
             📁
           </button>
           
           <div style="position: relative; display: flex; align-items: center; justify-content: center;">
             <div class="capture-pulse-ring" style="width: 84px; height: 84px;"></div>
-            <button id="capture-btn" class="capture-btn" title="Capture & Solve Stars">
+            <button id="capture-btn" class="capture-btn" title="Capture & Solve Stars" data-translate-title="captureBtnTitle">
               <svg viewBox="0 0 24 24">
                 <!-- Aperture/Scan SVG -->
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
@@ -104,7 +104,7 @@
             <div id="scan-counter-badge" class="scan-counter-badge">3 Scans Left</div>
           </div>
 
-          <button id="pin-btn" class="header-btn" title="Pin Current Center" style="width: 56px; height: 56px; border-radius: 50%; font-size: 20px;">
+          <button id="pin-btn" class="header-btn" title="Pin Current Center" style="width: 56px; height: 56px; border-radius: 50%; font-size: 20px;" data-translate-title="pinBtnTitle">
             📍
           </button>
         </div>
@@ -140,20 +140,20 @@
         </div>
 
         <div class="settings-section">
-          <div class="settings-section-title">PHOTO TOOLS</div>
+          <div class="settings-section-title" data-translate="photoTools">PHOTO TOOLS</div>
           <div id="menu-upload" class="menu-item">
             <span>📁</span>
-            <span class="menu-item-text">Upload Sky Photo</span>
+            <span class="menu-item-text" data-translate="uploadPhoto">Upload Sky Photo</span>
           </div>
         </div>
 
         <div class="settings-section" style="margin-top: 15px;">
-          <div class="settings-section-title">CONFIG</div>
+          <div class="settings-section-title" data-translate="configSection">CONFIG</div>
           
           <!-- Language Toggle Menu Item -->
           <div class="menu-item">
             <span>🌐</span>
-            <span class="menu-item-text">English UI</span>
+            <span class="menu-item-text" data-translate="langLabel">English UI</span>
             <label class="toggle-switch">
               <input type="checkbox" id="lang-toggle">
               <span class="slider-round"></span>
@@ -166,18 +166,18 @@
         </div>
 
         <div class="settings-section" style="margin-top: 15px;">
-          <div class="settings-section-title">LEGAL & HELP</div>
+          <div class="settings-section-title" data-translate="legalSection">LEGAL & HELP</div>
           <a href="about.html" class="menu-item" style="text-decoration: none;">
             <span>ℹ️</span>
-            <span class="menu-item-text">About & Help</span>
+            <span class="menu-item-text" data-translate="aboutHelp">About & Help</span>
           </a>
           <a href="privacy.html" class="menu-item" style="text-decoration: none;">
             <span>🔒</span>
-            <span class="menu-item-text">Privacy Policy</span>
+            <span class="menu-item-text" data-translate="privacyPolicy">Privacy Policy</span>
           </a>
           <a href="terms.html" class="menu-item" style="text-decoration: none;">
             <span>📄</span>
-            <span class="menu-item-text">Terms of Service</span>
+            <span class="menu-item-text" data-translate="termsOfService">Terms of Service</span>
           </a>
         </div>
       </div>
@@ -296,12 +296,12 @@
     <!-- Custom Star Naming Modal -->
     <div id="naming-modal" class="modal-overlay">
       <div class="modal-content">
-        <h3 style="color: var(--accent); margin-top: 0; font-family: var(--font-family-mono); font-size: 18px;">Name Custom Star</h3>
-        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 15px; line-height: 1.4;">Enter a name to save this celestial direction to your device's offline memory.</p>
-        <input type="text" id="custom-star-name-input" placeholder="e.g. My Favorite Star" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: #fff; margin-bottom: 20px; outline: none; font-family: inherit;">
+        <h3 style="color: var(--accent); margin-top: 0; font-family: var(--font-family-mono); font-size: 18px;" data-translate="customStarTitle">Name Custom Star</h3>
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 15px; line-height: 1.4;" data-translate="customStarDesc">Enter a name to save this celestial direction to your device's offline memory.</p>
+        <input type="text" id="custom-star-name-input" placeholder="e.g. My Favorite Star" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: #fff; margin-bottom: 20px; outline: none; font-family: inherit;" data-translate="customStarPlaceholder">
         <div style="display: flex; gap: 10px; justify-content: flex-end;">
-          <button id="naming-modal-cancel" class="btn btn-secondary" style="padding: 8px 16px; min-width: auto; height: auto; font-size: 13px; border-radius: 10px;">Cancel</button>
-          <button id="naming-modal-save" class="btn btn-primary" style="padding: 8px 16px; min-width: auto; height: auto; font-size: 13px; border-radius: 10px;">Save</button>
+          <button id="naming-modal-cancel" class="btn btn-secondary" style="padding: 8px 16px; min-width: auto; height: auto; font-size: 13px; border-radius: 10px;" data-translate="cancelBtn">Cancel</button>
+          <button id="naming-modal-save" class="btn btn-primary" style="padding: 8px 16px; min-width: auto; height: auto; font-size: 13px; border-radius: 10px;" data-translate="saveText">Save</button>
         </div>
       </div>
     </div>
@@ -311,70 +311,70 @@
       <div class="modal-content pro-modal-content" style="max-width: 420px; border: 1px solid #d4af37; box-shadow: 0 0 25px rgba(212, 175, 55, 0.25);">
         <div style="text-align: center; margin-bottom: 20px;">
           <span style="font-size: 44px; display: block; margin-bottom: 8px;">🌟</span>
-          <h3 style="color: #d4af37; margin: 0; font-family: var(--font-family-mono); font-size: 22px; letter-spacing: 0.05em;">STARFINDER PRO</h3>
-          <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.1em;">Unlock the Full Universe</p>
+          <h3 style="color: #d4af37; margin: 0; font-family: var(--font-family-mono); font-size: 22px; letter-spacing: 0.05em;" data-translate="proTitle">STARFINDER PRO</h3>
+          <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.1em;" data-translate="proSubtitle">Unlock the Full Universe</p>
         </div>
         
         <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; font-size: 13px; color: var(--text-secondary);">
           <div style="display: flex; gap: 12px; align-items: flex-start;">
             <span style="font-size: 16px; line-height: 1;">🚀</span>
             <div>
-              <strong style="color: #fff; display: block;">Unlimited Sky Scanning</strong>
-              <span style="font-size: 11px;">Analyze and solve constellations without limits (Free: 3 scans).</span>
+              <strong style="color: #fff; display: block;" data-translate="proFeature1Title">Unlimited Sky Scanning</strong>
+              <span style="font-size: 11px;" data-translate="proFeature1Desc">Analyze and solve constellations without limits (Free: 3 scans).</span>
             </div>
           </div>
           <div style="display: flex; gap: 12px; align-items: flex-start;">
             <span style="font-size: 16px; line-height: 1;">📍</span>
             <div>
-              <strong style="color: #fff; display: block;">Custom Star Pinning</strong>
-              <span style="font-size: 11px;">Mark, name, and permanently save your favorite stars in the sky.</span>
+              <strong style="color: #fff; display: block;" data-translate="proFeature2Title">Custom Star Pinning</strong>
+              <span style="font-size: 11px;" data-translate="proFeature2Desc">Mark, name, and permanently save your favorite stars in the sky.</span>
             </div>
           </div>
           <div style="display: flex; gap: 12px; align-items: flex-start;">
             <span style="font-size: 16px; line-height: 1;">⏳</span>
             <div>
-              <strong style="color: #fff; display: block;">Interactive Time Travel</strong>
-              <span style="font-size: 11px;">Fast-forward or rewind time to observe shifts in star orientations.</span>
+              <strong style="color: #fff; display: block;" data-translate="proFeature3Title">Interactive Time Travel</strong>
+              <span style="font-size: 11px;" data-translate="proFeature3Desc">Fast-forward or rewind time to observe shifts in star orientations.</span>
             </div>
           </div>
           <div style="display: flex; gap: 12px; align-items: flex-start;">
             <span style="font-size: 16px; line-height: 1;">🛰️</span>
             <div>
-              <strong style="color: #fff; display: block;">Satellite & Meteor Alerts</strong>
-              <span style="font-size: 11px;">Track the ISS overhead pass times and access meteor shower dates.</span>
+              <strong style="color: #fff; display: block;" data-translate="proFeature4Title">Satellite & Meteor Alerts</strong>
+              <span style="font-size: 11px;" data-translate="proFeature4Desc">Track the ISS overhead pass times and access meteor shower dates.</span>
             </div>
           </div>
           <div style="display: flex; gap: 12px; align-items: flex-start;">
             <span style="font-size: 16px; line-height: 1;">🏆</span>
             <div>
-              <strong style="color: #fff; display: block;">Achievements & Badges</strong>
-              <span style="font-size: 11px;">Collect badges for identifying constellations, orbits, and events.</span>
+              <strong style="color: #fff; display: block;" data-translate="proFeature5Title">Achievements & Badges</strong>
+              <span style="font-size: 11px;" data-translate="proFeature5Desc">Collect badges for identifying constellations, orbits, and events.</span>
             </div>
           </div>
         </div>
 
         <!-- Purchase & Activation Controls -->
         <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid rgba(212,175,55,0.15); padding-top: 15px;">
-          <a href="https://example.com/starfinder-pro" target="_blank" class="btn btn-primary" style="background: linear-gradient(135deg, #d4af37, #aa7c11); border: none; color: #000; font-weight: bold; text-align: center; text-decoration: none; padding: 12px; border-radius: 12px; display: block; font-size: 14px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);">
+          <a href="https://example.com/starfinder-pro" target="_blank" class="btn btn-primary" style="background: linear-gradient(135deg, #d4af37, #aa7c11); border: none; color: #000; font-weight: bold; text-align: center; text-decoration: none; padding: 12px; border-radius: 12px; display: block; font-size: 14px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);" data-translate="proBuyBtn">
             GET PRO - $4.99 (₹399)
           </a>
           
-          <div style="text-align: center; font-size: 11px; color: var(--text-muted); margin: 4px 0;">
+          <div style="text-align: center; font-size: 11px; color: var(--text-muted); margin: 4px 0;" data-translate="proOrLabel">
             — OR ACTIVATE OFFLINE LICENSE —
           </div>
           
           <div style="display: flex; gap: 8px;">
-            <input type="text" id="license-key-input" placeholder="Enter License Key (e.g. SF-XXX-PRO)" style="flex-grow: 1; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.3); color: #fff; font-size: 12px; outline: none; font-family: var(--font-family-mono);">
-            <button id="activate-license-btn" class="btn btn-primary" style="background: transparent; border: 1px solid #d4af37; color: #d4af37; font-size: 12px; padding: 0 16px; border-radius: 10px; min-width: auto; height: auto;">
+            <input type="text" id="license-key-input" placeholder="Enter License Key (e.g. SF-XXX-PRO)" style="flex-grow: 1; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.3); color: #fff; font-size: 12px; outline: none; font-family: var(--font-family-mono);" data-translate="proKeyPlaceholder">
+            <button id="activate-license-btn" class="btn btn-primary" style="background: transparent; border: 1px solid #d4af37; color: #d4af37; font-size: 12px; padding: 0 16px; border-radius: 10px; min-width: auto; height: auto;" data-translate="proActivateBtn">
               Activate
             </button>
           </div>
-          <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 4px;">
+          <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 4px;" data-translate="proDevInfo">
             ℹ️ Developers: Test key is <code style="color: #d4af37; background: rgba(212,175,55,0.1); padding: 2px 4px; border-radius: 4px;">SF-777-PRO</code>
           </div>
         </div>
 
-        <button id="close-pro-btn" class="btn btn-secondary" style="width: 100%; margin-top: 15px; padding: 10px; border-radius: 10px; font-size: 12px;">
+        <button id="close-pro-btn" class="btn btn-secondary" style="width: 100%; margin-top: 15px; padding: 10px; border-radius: 10px; font-size: 12px;" data-translate="proCloseBtn">
           Close / Continue Free
         </button>
       </div>

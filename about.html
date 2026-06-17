@@ -58,44 +58,61 @@
 </head>
 <body>
   <div class="legal-container">
-    <h1><span>ℹ️</span> About & Help (परिचय और मदद)</h1>
+    <h1><span>ℹ️</span> About & Help / परिचय और मदद</h1>
     
-    <h2>1. StarFinder Web क्या है?</h2>
+    <h2>1. What is StarFinder Web? / StarFinder Web क्या है?</h2>
     <p>
-      StarFinder Web एक अत्याधुनिक, 100% ऑफ़लाइन काम करने वाला Progressive Web App (PWA) है। यह शौकिया खगोलविदों, छात्रों और नाइट स्काई फोटोग्राफर्स को अपने स्मार्टफोन कैमरे की मदद से रात के आसमान में तारों और तारामंडल (Constellations) को पहचानने में मदद करता है।
+      <strong>[EN]</strong> StarFinder Web is a state-of-the-art, 100% offline Progressive Web App (PWA) designed to run entirely in your web browser. It helps amateur astronomers, stargazers, and night-sky photographers identify stars, constellations, and orbits in the night sky using their smartphone camera.<br>
+      <strong>[HI]</strong> StarFinder Web एक अत्याधुनिक, 100% ऑफ़लाइन काम करने वाला Progressive Web App (PWA) है। यह शौकिया खगोलविदों, छात्रों और नाइट स्काई फोटोग्राफर्स को अपने स्मार्टफोन कैमरे की मदद से रात के आसमान में तारों और तारामंडल (Constellations) को पहचानने में मदद करता है।
     </p>
 
-    <h2>2. यह कैसे काम करता है?</h2>
+    <h2>2. How does it work? / यह कैसे काम करता है?</h2>
     <p>
-      यह ऐप पूर्णतः इन-ब्राउज़र कंप्यूटिंग पर आधारित है:
+      <strong>[EN]</strong> This application relies on fully local in-browser computing (no server cost, 100% privacy):<br>
+      <strong>[HI]</strong> यह ऐप पूर्णतः इन-ब्राउज़र कंप्यूटिंग पर आधारित है:
     </p>
     <ul>
-      <li><strong>सेंसर ट्रैकिंग (AR Mode):</strong> आपके फोन के Gyroscope और Compass सेंसर का उपयोग करके यह आपके सामने के आसमान का एक रीयल-टाइम वर्चुअल मैप ड्रा करता है।</li>
-      <li><strong>ऑफ़लाइन प्लेट सॉल्विंग (Plate Solving):</strong> जब आप आसमान की फोटो खींचते हैं, तो ऐप के अंदर का एल्गोरिदम तारों की स्थिति का विश्लेषण करके उनकी सटीक दिशा और तारामंडल का नाम पहचान लेता है।</li>
+      <li><strong>[EN] Sensor Tracking (AR Mode):</strong> Using your phone's Gyroscope and Magnetometer (Compass) sensors, it draws a real-time virtual overlay of stars exactly where you point.<br>
+      <strong>[HI] सेंसर ट्रैकिंग (AR Mode):</strong> आपके फोन के Gyroscope और Compass सेंसर का उपयोग करके यह आपके सामने के आसमान का एक रीयल-टाइम वर्चुअल मैप ड्रा करता है।</li>
+      <li><strong>[EN] Offline Plate Solving:</strong> When you capture a sky photo (or upload one), a geometric hashing solver detects star centroids and matches them against our database to identify constellations completely locally.<br>
+      <strong>[HI] ऑफ़लाइन प्लेट सॉल्विंग:</strong> जब आप आसमान की फोटो खींचते हैं, तो ऐप के अंदर का एल्गोरिदम तारों की स्थिति का विश्लेषण करके उनकी सटीक दिशा और तारामंडल का नाम पहचान लेता है।</li>
     </ul>
 
-    <h2>3. गाइड: सेंसर कैलिब्रेशन (Compass Calibration)</h2>
+    <h2>3. Guide: Compass Calibration / गाइड: सेंसर कैलिब्रेशन</h2>
     <div class="step-box">
-      <p><strong>सटीक दिशा के लिए दिशा सूचक को कैलिब्रेट करना बेहद जरूरी है:</strong></p>
+      <p><strong>[EN] Accurate sensor alignment is critical for AR tracking:</strong><br>
+      <strong>[HI] सटीक दिशा के लिए दिशा सूचक को कैलिब्रेट करना बेहद जरूरी है:</strong></p>
       <ol>
-        <li>ऐप खोलें और फोन को आसमान की तरफ उठाएं।</li>
-        <li>अपने फोन को हवा में अंग्रेजी के <strong>'8' (Eight)</strong> के आकार में दो-तीन बार घुमाएं।</li>
-        <li>इससे आपके फोन का मैग्नेटोमीटर री-कैलिब्रेट हो जाएगा और कंपास सटीक दिशा (North-East-West-South) दिखाने लगेगा।</li>
+        <li><strong>[EN]</strong> Raise your phone pointing towards the night sky.<br>
+        <strong>[HI]</strong> ऐप खोलें और फोन को आसमान की तरफ उठाएं।</li>
+        <li><strong>[EN]</strong> Wave your phone in a wide <strong>'figure-8' (8)</strong> motion in the air 2 or 3 times.<br>
+        <strong>[HI]</strong> अपने फोन को हवा में अंग्रेजी के <strong>'8' (Eight)</strong> के आकार में दो-तीन बार घुमाएं।</li>
+        <li><strong>[EN]</strong> This recalibrates your phone's internal magnetometer sensor, aligning the map with true North.<br>
+        <strong>[HI]</strong> इससे आपके फोन का मैग्नेटोमीटर री-कैलिब्रेट हो जाएगा और कंपास सटीक दिशा दिखाने लगेगा।</li>
       </ol>
     </div>
 
-    <h2>4. ऑफ़लाइन PWA इंस्टॉल कैसे करें?</h2>
+    <h2>4. How to Install Offline PWA / ऑफ़लाइन PWA इंस्टॉल कैसे करें?</h2>
     <p>
-      बिना इंटरनेट के कैंपिंग या हाइकिंग के दौरान ऐप का उपयोग करने के लिए इसे इंस्टॉल करें:
+      <strong>[EN]</strong> Install the app to your home screen for complete network independence when camping or hiking in remote areas:<br>
+      <strong>[HI]</strong> बिना इंटरनेट के कैंपिंग या हाइकिंग के दौरान ऐप का उपयोग करने के लिए इसे इंस्टॉल करें:
     </p>
     <ul>
-      <li><strong>Android (Chrome):</strong> वेबसाइट खोलने पर नीचे आने वाले "Add to Home Screen" प्रॉम्प्ट पर क्लिक करें।</li>
-      <li><strong>iOS (Safari):</strong> नीचे दिए गए 'Share' बटन पर टैप करें और स्क्रॉल करके "Add to Home Screen" का चयन करें।</li>
+      <li><strong>[EN] Android (Chrome):</strong> Click the "Add to Home Screen" notification or choose it from the Chrome menu.<br>
+      <strong>[HI] Android (Chrome):</strong> वेबसाइट खोलने पर नीचे आने वाले "Add to Home Screen" प्रॉम्प्ट पर क्लिक करें।</li>
+      <li><strong>[EN] iOS (Safari):</strong> Tap the 'Share' icon in Safari, scroll down, and select "Add to Home Screen".<br>
+      <strong>[HI] iOS (Safari):</strong> नीचे दिए गए 'Share' बटन पर टैप करें और स्क्रॉल करके "Add to Home Screen" का चयन करें।</li>
     </ul>
 
     <a href="index.html" class="btn btn-primary back-btn">
-      <span>🌌</span> आकाशीय ट्रैकर पर वापस जाएं
+      <span>🌌</span> Back to Celestial Tracker / ट्रैकर पर वापस जाएं
     </a>
   </div>
+
+  <script>
+    if (localStorage.getItem("starfinder_night") === "true") {
+      document.body.classList.add("night-mode-red");
+    }
+  </script>
 </body>
 </html>

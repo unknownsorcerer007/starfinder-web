@@ -119,7 +119,49 @@ const TRANSLATIONS = {
     direction_s: "South",
     direction_sw: "South-West",
     direction_w: "West",
-    direction_nw: "North-West"
+    direction_nw: "North-West",
+
+    // Side Drawer & Modals Extra Keys
+    photoTools: "PHOTO TOOLS",
+    uploadPhoto: "Upload Sky Photo",
+    configSection: "CONFIG",
+    langLabel: "English UI",
+    legalSection: "LEGAL & HELP",
+    aboutHelp: "About & Help",
+    privacyPolicy: "Privacy Policy",
+    termsOfService: "Terms of Service",
+    customStarTitle: "Name Custom Star",
+    customStarDesc: "Enter a name to save this celestial direction to your device's offline memory.",
+    customStarPlaceholder: "e.g. My Favorite Star",
+    cancelBtn: "Cancel",
+    saveText: "Save",
+    proTitle: "STARFINDER PRO",
+    proSubtitle: "Unlock the Full Universe",
+    proFeature1Title: "Unlimited Sky Scanning",
+    proFeature1Desc: "Analyze and solve constellations without limits (Free: 3 scans).",
+    proFeature2Title: "Custom Star Pinning",
+    proFeature2Desc: "Mark, name, and permanently save your favorite stars in the sky.",
+    proFeature3Title: "Interactive Time Travel",
+    proFeature3Desc: "Fast-forward or rewind time to observe shifts in star orientations.",
+    proFeature4Title: "Satellite & Meteor Alerts",
+    proFeature4Desc: "Track the ISS overhead pass times and access meteor shower dates.",
+    proFeature5Title: "Achievements & Badges",
+    proFeature5Desc: "Collect badges for identifying constellations, orbits, and events.",
+    proBuyBtn: "GET PRO - $4.99 (₹399)",
+    proOrLabel: "— OR ACTIVATE OFFLINE LICENSE —",
+    proKeyPlaceholder: "Enter License Key (e.g. SF-XXX-PRO)",
+    proActivateBtn: "Activate",
+    proDevInfo: "ℹ️ Developers: Test key is <code style='color: #d4af37; background: rgba(212,175,55,0.1); padding: 2px 4px; border-radius: 4px;'>SF-777-PRO</code>",
+    proCloseBtn: "Close / Continue Free",
+
+    // Tooltips
+    menuBtnTitle: "Settings / Drawer",
+    trackBtnTitle: "Track Star / Object",
+    nightBtnTitle: "Toggle Night Vision Mode",
+    uploadBtnTitle: "Upload Sky Photo",
+    captureBtnTitle: "Capture & Solve Stars",
+    pinBtnTitle: "Pin Current Center",
+    againBtnTitle: "Scan Again"
   },
   hi: {
     title: "StarFinder Web",
@@ -163,7 +205,49 @@ const TRANSLATIONS = {
     direction_s: "दक्षिण",
     direction_sw: "दक्षिण-पश्चिम",
     direction_w: "पश्चिम",
-    direction_nw: "उत्तर-पश्चिम"
+    direction_nw: "उत्तर-पश्चिम",
+
+    // Side Drawer & Modals Extra Keys
+    photoTools: "फ़ोटो उपकरण",
+    uploadPhoto: "आसमान की फ़ोटो अपलोड करें",
+    configSection: "सेटिंग्स (कॉन्फ़िगर)",
+    langLabel: "हिन्दी UI",
+    legalSection: "सहायता और नियम",
+    aboutHelp: "परिचय और मदद",
+    privacyPolicy: "गोपनीयता नीति",
+    termsOfService: "सेवा की शर्तें",
+    customStarTitle: "कस्टम तारा का नाम रखें",
+    customStarDesc: "इस खगोलीय दिशा को अपने डिवाइस की ऑफ़लाइन मेमोरी में सहेजने के लिए एक नाम दर्ज करें।",
+    customStarPlaceholder: "जैसे- मेरा पसंदीदा तारा",
+    cancelBtn: "रद्द करें",
+    saveText: "सहेजें",
+    proTitle: "स्टारफाइंडर प्रो",
+    proSubtitle: "पूरे ब्रह्मांड को अनलॉक करें",
+    proFeature1Title: "असीमित आसमान स्कैनिंग",
+    proFeature1Desc: "बिना किसी सीमा के तारामंडल का विश्लेषण और समाधान करें (मुफ़्त: 3 स्कैन)।",
+    proFeature2Title: "कस्टम तारा पिनिंग",
+    proFeature2Desc: "आसमान में अपने पसंदीदा तारों को चिह्नित करें, नाम दें और सुरक्षित सहेजें।",
+    proFeature3Title: "इंटरैक्टिव समय यात्रा",
+    proFeature3Desc: "तारों की स्थिति में बदलाव देखने के लिए समय को आगे बढ़ाएं या पीछे ले जाएं।",
+    proFeature4Title: "सैटेलाइट और उल्का अलर्ट",
+    proFeature4Desc: "ISS के ऊपर से गुजरने के समय को ट्रैक करें और उल्कापात की तारीखों तक पहुंचें।",
+    proFeature5Title: "उपलब्धियां और बैज",
+    proFeature5Desc: "तारामंडल, कक्षाओं और खगोलीय घटनाओं की पहचान के लिए बैज एकत्र करें।",
+    proBuyBtn: "प्रो प्राप्त करें - ₹399 ($4.99)",
+    proOrLabel: "— या ऑफ़लाइन लाइसेंस सक्रिय करें —",
+    proKeyPlaceholder: "लाइसेंस कुंजी दर्ज करें (जैसे SF-XXX-PRO)",
+    proActivateBtn: "सक्रिय करें",
+    proDevInfo: "ℹ️ डेवलपर्स: परीक्षण कुंजी <code style='color: #d4af37; background: rgba(212,175,55,0.1); padding: 2px 4px; border-radius: 4px;'>SF-777-PRO</code> है",
+    proCloseBtn: "बंद करें / मुफ़्त जारी रखें",
+
+    // Tooltips
+    menuBtnTitle: "सेटिंग्स / मेनू",
+    trackBtnTitle: "तारा / ऑब्जेक्ट ट्रैक करें",
+    nightBtnTitle: "लाल नाईट मोड बदलें",
+    uploadBtnTitle: "फ़ोटो अपलोड करें",
+    captureBtnTitle: "आसमान स्कैन करें",
+    pinBtnTitle: "वर्तमान केंद्र पिन करें",
+    againBtnTitle: "पुनः स्कैन करें"
   }
 };
 
@@ -287,11 +371,23 @@ function translateUI() {
   const lang = state.language;
   const dict = TRANSLATIONS[lang];
 
-  // Set page headers
+  // Set page headers & texts & placeholders
   document.querySelectorAll("[data-translate]").forEach(el => {
     const key = el.getAttribute("data-translate");
     if (dict[key]) {
-      el.textContent = dict[key];
+      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+        el.placeholder = dict[key];
+      } else {
+        el.innerHTML = dict[key];
+      }
+    }
+  });
+
+  // Set page tooltip titles
+  document.querySelectorAll("[data-translate-title]").forEach(el => {
+    const key = el.getAttribute("data-translate-title");
+    if (dict[key]) {
+      el.setAttribute("title", dict[key]);
     }
   });
 
